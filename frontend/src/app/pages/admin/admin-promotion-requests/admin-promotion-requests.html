@@ -1,36 +1,171 @@
-<div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-  <div class="px-10 py-8 bg-gradient-to-r from-purple-600 to-pink-600">
-    <h2 class="text-4xl font-black text-white">Admin Access Requests</h2>
-    <p class="text-purple-200 mt-2 text-lg">Review and approve new admins</p>
-  </div>
+<div class="bg-slate-900 min-h-screen p-8 sm:p-12">
+  <div class="max-w-7xl mx-auto">
+    <div
+      class="backdrop-blur-xl bg-slate-800/80 border border-slate-700/50 rounded-3xl shadow-2xl overflow-hidden"
+    >
+      <div
+        class="px-6 sm:px-10 py-6 sm:py-8 bg-gradient-to-r from-black-700 to-green-800 relative border-b border-slate-700/50"
+      >
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Admin Access Requests
+        </h2>
+        <p class="text-indigo-300 mt-1 text-base sm:text-lg">
+          Review accounts requesting elevated privileges
+        </p>
 
-  <div *ngIf="requests.length === 0" class="p-24 text-center">
-    <p class="text-3xl text-gray-400">No pending requests</p>
-  </div>
-
-  <div *ngIf="requests.length > 0" class="divide-y divide-white/10">
-    <div *ngFor="let req of requests" class="px-10 py-8 hover:bg-white/5 transition flex items-center justify-between">
-      <div class="flex items-center gap-6">
-        <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg">
-          {{ req.user.name.charAt(0) }}
-        </div>
-        <div>
-          <p class="text-2xl font-bold text-white">{{ req.user.name }}</p>
-          <p class="text-gray-400">{{ req.user.email }}</p>
-          <p class="text-sm text-gray-500 mt-1">Requested {{ req.requestedAt | date:'medium' }}</p>
+        <div class="absolute top-4 right-4 text-white/80 text-sm">
+          <span class="bg-white/20 px-4 py-1.5 rounded-full font-semibold"
+            >Pending: {{ requests.length }}</span
+          >
         </div>
       </div>
 
-      <div class="flex gap-4">
-        <button (click)="approve(req.id)" 
-                class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transform hover:scale-110 transition">
-          Approve
-        </button>
-        <button (click)="reject(req.id)" 
-                class="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transform hover:scale-110 transition">
-          Reject
-        </button>
+      <div *ngIf="loading" class="divide-y divide-slate-700/30">
+        <div *ngFor="let i of [1, 2, 3, 4]" class="flex animate-pulse px-10 py-6 sm:py-8 gap-6">
+          <div class="w-14 h-14 rounded-full bg-slate-700"></div>
+          <div class="flex-1 space-y-2 pt-2">
+            <div class="h-4 w-64 rounded bg-slate-700"></div>
+            <div class="h-3 w-40 rounded bg-slate-700/70"></div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!loading && requests.length === 0" class="text-center py-20 sm:py-28">
+        <div class="text-6xl sm:text-7xl mb-4">🙌</div>
+        <p class="text-2xl sm:text-3xl text-gray-300 font-semibold">No pending requests</p>
+        <p class="text-gray-500 mt-2">The queue is clear!</p>
+      </div>
+
+      <div *ngIf="!loading && requests.length > 0" class="divide-y divide-slate-700/30">
+        <div
+          *ngFor="let req of requests"
+          class="px-6 sm:px-10 py-6 flex flex-wrap items-center justify-between hover:bg-slate-700/40 transition duration-150 ease-in-out"
+        >
+          <div
+            class="flex items-center gap-4 sm:gap-6 cursor-pointer flex-1 min-w-[300px]"
+            (click)="openDetails(req)"
+          >
+            <div
+              class="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-xl sm:text-3xl font-bold shadow-lg text-white"
+            >
+              {{ req.user.name.charAt(0) }}
+            </div>
+            <div>
+              <p class="text-lg sm:text-xl font-bold text-white">{{ req.user.name }}</p>
+              <p class="text-gray-400 text-sm sm:text-base">{{ req.user.email }}</p>
+              <p class="text-xs text-gray-500 mt-1">
+                Requested {{ req.requestedAt | date : 'medium' }}
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mt-4 sm:mt-0">
+            <button
+              (click)="approve(req.id)"
+              [disabled]="isProcessingId === req.id || !!isProcessingId"
+              class="px-5 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl font-semibold transition duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span *ngIf="isProcessingId !== req.id">Approve</span>
+              <span *ngIf="isProcessingId === req.id">Approving...</span>
+            </button>
+
+            <button
+              (click)="showRejectModal(req)"
+              [disabled]="isProcessingId === req.id || !!isProcessingId"
+              class="px-5 py-2.5 sm:py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-xl font-semibold transition duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Reject
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
+</div>
+
+<div
+  *ngIf="selected"
+  class="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4"
+>
+  <div
+    class="bg-gray-800 text-white rounded-3xl w-full max-w-md p-6 sm:p-8 shadow-2xl border border-slate-700"
+  >
+    <h3 class="text-2xl font-extrabold mb-4 border-b border-gray-700 pb-3 text-indigo-400">
+      Request Details
+    </h3>
+    <div class="space-y-3 text-gray-300">
+      <p>
+        <b>Name:</b> <span class="text-white">{{ selected.user.name }}</span>
+      </p>
+      <p>
+        <b>Email:</b> <span class="text-white">{{ selected.user.email }}</span>
+      </p>
+      <p>
+        <b>Requested:</b>
+        <span class="text-white">{{ selected.requestedAt | date : 'medium' }}</span>
+      </p>
+      <p class="text-xs pt-2 text-gray-500">Note: Approving here will finalize the action.</p>
+    </div>
+
+    <div class="flex justify-end mt-6 gap-3">
+      <button
+        class="px-5 py-2 bg-gray-700 rounded-xl hover:bg-gray-600 transition"
+        (click)="selected = null"
+      >
+        Close
+      </button>
+      <button
+        class="px-5 py-2 bg-emerald-600 rounded-xl hover:bg-emerald-700 transition"
+        (click)="approve(selected.id)"
+        [disabled]="isProcessingId === selected.id"
+      >
+        Approve
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="rejecting"
+  class="fixed inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-50 p-4"
+>
+  <div
+    class="bg-gray-800 text-white rounded-3xl w-full max-w-sm p-8 text-center space-y-5 shadow-2xl border border-slate-700"
+  >
+    <h3 class="text-xl font-extrabold text-red-400">Confirm Rejection</h3>
+    <p class="text-gray-300">
+      Are you sure you want to permanently reject the admin request for **{{
+        rejecting.user.name
+      }}**?
+    </p>
+    <div class="flex justify-center gap-4 pt-2">
+      <button
+        class="px-5 py-2 bg-gray-600 rounded-xl hover:bg-gray-500 transition"
+        (click)="rejecting = null"
+      >
+        Cancel
+      </button>
+      <button
+        class="px-5 py-2 bg-red-600 rounded-xl hover:bg-red-700 transition"
+        (click)="reject(rejecting.id)"
+        [disabled]="isProcessingId === rejecting.id"
+      >
+        <span *ngIf="isProcessingId !== rejecting.id">Reject Request</span>
+        <span *ngIf="isProcessingId === rejecting.id">Processing...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="currentToast"
+  class="fixed bottom-6 right-6 px-5 py-3 text-white rounded-xl shadow-xl transition-opacity duration-300 z-[9999]"
+  [ngClass]="{
+    'bg-emerald-600': currentToast.color === 'success',
+    'bg-red-600': currentToast.color === 'danger',
+    'opacity-100': currentToast,
+    'opacity-0': !currentToast
+  }"
+>
+  {{ currentToast.message }}
 </div>

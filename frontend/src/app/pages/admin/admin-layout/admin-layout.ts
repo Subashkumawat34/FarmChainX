@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common'; // Added DatePipe just in case
 import { RouterOutlet } from '@angular/router';
 import { AdminSidebar } from '../components/admin-sidebar/admin-sidebar';
 import { AuthService } from '../../../services/auth.service';
@@ -6,23 +7,26 @@ import { AuthService } from '../../../services/auth.service';
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [RouterOutlet, AdminSidebar],
+  imports: [CommonModule, RouterOutlet, AdminSidebar, DatePipe],
   templateUrl: './admin-layout.html',
-  styleUrl: './admin-layout.scss'
+  styleUrls: ['./admin-layout.scss']
 })
 export class AdminLayout {
-
   // Sidebar toggle state
   sidebarOpen = false;
 
   constructor(private authService: AuthService) {}
 
-  // Toggle sidebar on mobile
-  toggleSidebar() {
+  /**
+   * Toggles the state of the mobile sidebar.
+   */
+  toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-  // Get admin name (first name only)
+  /**
+   * Retrieves and formats the current admin's first name.
+   */
   currentAdminName(): string {
     const name = this.authService.getName();
     return name ? name.split(' ')[0] : 'Admin';
