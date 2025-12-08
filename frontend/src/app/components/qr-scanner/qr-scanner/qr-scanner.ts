@@ -20,15 +20,18 @@ import {
   ArrowRight,
   Smartphone,
   Image as ImageIcon,
-  Zap
+  Zap,
 } from 'lucide-angular';
+
+// Enum for camera status
+export type CameraStatus = 'initializing' | 'scanning' | 'denied' | 'error';
 
 @Component({
   selector: 'app-qr-scanner',
   standalone: true,
   imports: [CommonModule, ZXingScannerModule, LucideAngularModule],
   templateUrl: './qr-scanner.html',
-  styleUrl: './qr-scanner.scss'
+  styleUrl: './qr-scanner.scss',
 })
 export class QrScanner {
   private router = inject(Router);
@@ -49,7 +52,7 @@ export class QrScanner {
   readonly ImageIcon = ImageIcon;
   readonly Zap = Zap;
 
-  // ⭐ OLD LOGIC (kept exactly as-is)
+  // ⭐ Component State
   formats = [BarcodeFormat.QR_CODE];
   isScanning = false; // user picks method first
   torchEnabled = false;
@@ -57,6 +60,7 @@ export class QrScanner {
   usingFileUpload = false;
   uploadedImageUrl: string | null = null;
   scanResult: string | null = null;
+  cameraStatus: CameraStatus = 'initializing'; // New state property
 
   constructor() {}
 
@@ -65,6 +69,7 @@ export class QrScanner {
     this.isScanning = true;
     this.usingFileUpload = false;
     this.uploadedImageUrl = null;
+    this.cameraStatus = 'initializing'; // Set status when starting
   }
 
   // Stop scanning
@@ -73,14 +78,31 @@ export class QrScanner {
     this.usingFileUpload = false;
     this.torchEnabled = false;
     this.uploadedImageUrl = null;
+    this.cameraStatus = 'initializing'; // Reset status
   }
 
   // Navigate to product details
   viewDetails() {
     if (this.scanResult) {
-      const match = this.scanResult.match(/verify\/([a-f0-9-]{36})/i);
-      if (match) {
-        this.router.navigate(['/verify', match[1]]);
+      // Improved matching: Checks for the UUID structure and handles both full URLs and just the UUID
+      const match = this.scanResult.match(
+        /verify\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+      );
+      const uuidMatch = this.scanResult.match(
+        /([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+      );
+
+      const idToNavigate = match ? match[1] : uuidMatch ? uuidMatch[1] : null;
+
+      if (idToNavigate) {
+        // Use a relative path to ensure it works correctly
+        this.router.navigate(['/verify', idToNavigate]);
+      } else {
+        // Fallback for non-standard QR codes (e.g., just a URL/text without the expected format)
+        alert(
+          'Could not extract a valid verification ID from the scanned QR code. Result was: ' +
+            this.scanResult
+        );
       }
     }
   }
@@ -95,13 +117,19 @@ export class QrScanner {
   // Error scanning
   onScanError(err: any) {
     console.error('Scan error:', err);
+    this.cameraStatus = 'error'; // Set status on error
   }
 
-  // If camera permission denied
+  // If camera permission denied or granted
   onPermission(granted: boolean) {
     if (!granted) {
       alert('Camera access denied. Please use the "Upload Photo" option instead.');
       this.stopScanning();
+      this.cameraStatus = 'denied'; // Set status on denial
+    } else {
+      // Permission granted, now we are waiting for the camera feed
+      // We can transition to 'scanning' once the feed is detected, but for now, 'initializing' is fine.
+      this.cameraStatus = 'scanning';
     }
   }
 
@@ -123,13 +151,16 @@ export class QrScanner {
       this.isScanning = false;
       this.usingFileUpload = true;
 
+      // Dynamic import remains a good practice for larger libraries
       import('@zxing/library').then(zxing => {
         const codeReader = new zxing.BrowserQRCodeReader();
         const img = new Image();
         img.src = e.target.result;
 
         img.onload = () => {
-          codeReader.decodeFromImageElement(img)
+          // This promise handles the actual decoding from the image
+          codeReader
+            .decodeFromImageElement(img)
             .then(r => this.onScanSuccess(r.getText()))
             .catch(() => {
               alert('No QR code found in the image. Try again with a clearer photo.');
@@ -149,6 +180,7 @@ export class QrScanner {
     this.uploadedImageUrl = null;
     this.torchEnabled = false;
     this.scanResult = null;
+    this.cameraStatus = 'initializing'; // Reset status
   }
 }
 
