@@ -1,0 +1,80 @@
+<!-- src/app/pages/retailer/retailer-dashboard/retailer-dashboard.component.html -->
+<div class="max-w-7xl mx-auto p-4 sm:p-6">
+  <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
+    <h1 class="text-3xl font-bold">Retailer Dashboard</h1>
+    <div class="flex items-center gap-3">
+      <button (click)="refresh()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+        Refresh
+      </button>
+      <button (click)="export()" class="px-4 py-2 bg-emerald-100 rounded-lg">Export</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="p-6 bg-white rounded-2xl shadow">
+      <h4 class="text-sm text-slate-500">Current Inventory Value</h4>
+      <p class="text-2xl font-bold mt-2">₹ {{ inventoryValue | number }}</p>
+      <p class="text-xs text-slate-400 mt-1">Last 30 days</p>
+    </div>
+
+    <div class="p-6 bg-white rounded-2xl shadow">
+      <h4 class="text-sm text-slate-500">Open Purchase Orders</h4>
+      <p class="text-2xl font-bold mt-2">{{ openPOs }}</p>
+      <p class="text-xs text-slate-400 mt-1">Awaiting confirmation</p>
+    </div>
+
+    <div class="p-6 bg-white rounded-2xl shadow">
+      <h4 class="text-sm text-slate-500">Incoming Shipments</h4>
+      <p class="text-2xl font-bold mt-2">{{ incomingShipments }}</p>
+      <p class="text-xs text-slate-400 mt-1">ETA within 48 hours</p>
+    </div>
+
+    <div class="p-6 bg-white rounded-2xl shadow">
+      <h4 class="text-sm text-slate-500">Low Stock Items</h4>
+      <p class="text-2xl font-bold mt-2">{{ lowStock }}</p>
+      <p class="text-xs text-slate-400 mt-1">Needs reorder</p>
+    </div>
+  </div>
+
+  <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="col-span-2 bg-white rounded-2xl p-6 shadow">
+      <h3 class="font-semibold mb-4">Sales - Last 7 days</h3>
+      <canvas #barChart></canvas>
+    </div>
+
+    <div class="bg-white rounded-2xl p-6 shadow">
+      <h3 class="font-semibold mb-4">Stock Distribution</h3>
+      <canvas #pieChart></canvas>
+    </div>
+  </div>
+
+  <div class="mt-8 bg-white rounded-2xl p-6 shadow">
+    <h3 class="font-semibold mb-4">Recent Orders</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left table-auto">
+        <thead>
+          <tr class="text-slate-500 text-xs uppercase">
+            <th class="px-4 py-2">Order ID</th>
+            <th class="px-4 py-2">Supplier</th>
+            <th class="px-4 py-2">Items</th>
+            <th class="px-4 py-2">Total</th>
+            <th class="px-4 py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let o of recentOrders" class="border-t">
+            <td class="px-4 py-3">{{ o.id }}</td>
+            <td class="px-4 py-3">{{ o.supplier }}</td>
+            <td class="px-4 py-3">{{ o.items }} items</td>
+            <td class="px-4 py-3">₹ {{ o.total }}</td>
+            <td class="px-4 py-3">
+              <span class="px-3 py-1 rounded-full text-xs" [ngClass]="statusClass(o.status)">{{
+                o.status
+              }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

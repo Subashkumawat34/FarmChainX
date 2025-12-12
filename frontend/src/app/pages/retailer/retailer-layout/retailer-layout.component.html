@@ -1,0 +1,310 @@
+<!-- src/app/pages/retailer/retailer-layout/retailer-layout.component.html -->
+<div class="flex h-screen bg-slate-100 overflow-hidden">
+  <!-- Retailer Sidebar (desktop) -->
+  <aside
+    class="w-80 bg-white/5 backdrop-blur-lg border-r border-white/5 flex flex-col hidden lg:flex"
+  >
+    <div class="p-6 border-b border-white/6 flex items-center gap-4">
+      <!-- Attractive logo: gradient circle + leaf SVG -->
+      <div
+        class="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-indigo-600 shadow-lg"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          class="w-8 h-8 text-white"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M3 21c6-4 6-10 9-15 3 5 3 11 9 15" />
+          <path d="M12 3c2.5 2.5 2.5 5.5 4 7.5" />
+        </svg>
+      </div>
+
+      <div>
+        <div class="text-lg md:text-xl font-extrabold text-slate-900 leading-tight">
+          FarmChainX <span class="text-emerald-600">Retail</span>
+        </div>
+        <div class="text-xs md:text-sm text-slate-500 mt-1">GreenStore • Jaipur</div>
+      </div>
+    </div>
+
+    <div class="px-4 py-6 flex-1 overflow-y-auto">
+      <!-- profile small -->
+      <div class="flex items-center gap-3 px-2 py-3 rounded-lg hover:bg-slate-50/30 mb-5">
+        <div
+          class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-emerald-400 text-white flex items-center justify-center font-bold text-lg"
+        >
+          {{ retailerInitials }}
+        </div>
+        <div>
+          <div class="text-sm md:text-base font-semibold text-slate-900">{{ retailerName }}</div>
+          <div class="text-xs md:text-sm text-slate-500">Retailer</div>
+        </div>
+      </div>
+
+      <nav class="space-y-2">
+        <a
+          routerLink="/retailer/dashboard"
+          routerLinkActive="bg-indigo-600 text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center justify-between gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-base md:text-lg font-medium"
+          aria-current="page"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 3v18h18"
+              />
+            </svg>
+            <span>Dashboard</span>
+          </div>
+          <span class="text-xs md:text-sm bg-white/10 px-2 py-0.5 rounded-full">{{
+            counts.dashboard
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/retailer/inventory"
+          routerLinkActive="bg-indigo-600 text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center justify-between gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-base md:text-lg font-medium"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6"
+              />
+            </svg>
+            <span>Inventory</span>
+          </div>
+          <span class="text-xs md:text-sm bg-white/10 px-2 py-0.5 rounded-full">{{
+            counts.inventory
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/retailer/orders"
+          routerLinkActive="bg-indigo-600 text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center justify-between gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-base md:text-lg font-medium"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7h18M3 12h18M3 17h18"
+              />
+            </svg>
+            <span>Purchase Orders</span>
+          </div>
+          <span class="text-xs md:text-sm bg-white/10 px-2 py-0.5 rounded-full">{{
+            counts.orders
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/retailer/shipments"
+          routerLinkActive="bg-indigo-600 text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center justify-between gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-base md:text-lg font-medium"
+        >
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 7h13l4 8H6z"
+              />
+            </svg>
+            <span>Shipments</span>
+          </div>
+          <span class="text-xs md:text-sm bg-white/10 px-2 py-0.5 rounded-full">{{
+            counts.shipments
+          }}</span>
+        </a>
+
+        <a
+          routerLink="/retailer/provenance"
+          routerLinkActive="bg-indigo-600 text-white"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-base md:text-lg font-medium"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6l4 2" />
+          </svg>
+          <span>Provenance</span>
+        </a>
+
+        <div class="border-t border-white/6 mt-4 pt-4"></div>
+
+        <a
+          routerLink="/dashboard"
+          class="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50/30 transition text-sm md:text-base font-medium text-slate-600"
+        >
+          <svg class="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 7V3m8 4V3M3 11h18"
+            />
+          </svg>
+          <span>Back to App</span>
+        </a>
+      </nav>
+    </div>
+
+    <div class="px-4 py-4 border-t border-white/6">
+      <button
+        (click)="createPO()"
+        class="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm md:text-base font-semibold"
+      >
+        + Create PO
+      </button>
+      <div class="mt-3 text-xs text-slate-500">Support · Privacy</div>
+    </div>
+  </aside>
+
+  <!-- Main content (header + outlet) -->
+  <div class="flex-1 flex flex-col overflow-y-auto">
+    <!-- Header (same as before) -->
+    <header
+      class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-slate-200 shadow-sm"
+    >
+      <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button
+              (click)="toggleMobile()"
+              class="p-2 rounded-xl text-slate-700 hover:bg-slate-200 lg:hidden"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+            <div>
+              <h1 class="text-lg md:text-xl font-semibold text-slate-900">Retailer Panel</h1>
+              <p class="text-sm md:text-base text-slate-500">
+                Manage inventory, orders & shipments
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div
+              class="hidden sm:flex items-center gap-2 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200"
+            >
+              <div class="w-2.5 h-2.5 bg-emerald-600 rounded-full"></div>
+              <span class="text-xs md:text-sm font-medium text-emerald-800">Online</span>
+            </div>
+
+            <button class="p-2 rounded-lg hover:bg-slate-100" title="Notifications">
+              <svg
+                class="w-5 h-5 text-slate-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+
+    <footer
+      class="sticky bottom-0 z-30 bg-white/95 border-t border-slate-200 px-4 sm:px-6 lg:px-8 py-3"
+    >
+      <div class="flex items-center justify-between text-sm text-slate-500">
+        <div>© 2025 FarmChainX</div>
+        <div>Docs • Support</div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Mobile sidebar (retailer links) -->
+  <div *ngIf="mobileOpen" class="fixed inset-0 z-50 lg:hidden" (click)="toggleMobile()">
+    <div class="absolute inset-0 bg-black/40"></div>
+    <div
+      class="absolute left-0 top-0 w-64 h-full bg-white p-4 overflow-auto"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold">Retailer</h3>
+        <button (click)="toggleMobile()" class="p-1 rounded hover:bg-slate-100">&times;</button>
+      </div>
+
+      <nav class="space-y-2">
+        <a
+          routerLink="/retailer/dashboard"
+          (click)="toggleMobile()"
+          class="block px-3 py-2 rounded hover:bg-slate-100"
+          >Dashboard
+          <span class="float-right text-xs bg-slate-100 rounded px-1">{{
+            counts.dashboard
+          }}</span></a
+        >
+        <a
+          routerLink="/retailer/inventory"
+          (click)="toggleMobile()"
+          class="block px-3 py-2 rounded hover:bg-slate-100"
+          >Inventory
+          <span class="float-right text-xs bg-slate-100 rounded px-1">{{
+            counts.inventory
+          }}</span></a
+        >
+        <a
+          routerLink="/retailer/orders"
+          (click)="toggleMobile()"
+          class="block px-3 py-2 rounded hover:bg-slate-100"
+          >Orders
+          <span class="float-right text-xs bg-slate-100 rounded px-1">{{ counts.orders }}</span></a
+        >
+        <a
+          routerLink="/retailer/shipments"
+          (click)="toggleMobile()"
+          class="block px-3 py-2 rounded hover:bg-slate-100"
+          >Shipments
+          <span class="float-right text-xs bg-slate-100 rounded px-1">{{
+            counts.shipments
+          }}</span></a
+        >
+        <a
+          routerLink="/retailer/provenance"
+          (click)="toggleMobile()"
+          class="block px-3 py-2 rounded hover:bg-slate-100"
+          >Provenance</a
+        >
+      </nav>
+    </div>
+  </div>
+</div>

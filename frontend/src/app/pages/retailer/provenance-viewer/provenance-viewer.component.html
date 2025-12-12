@@ -1,0 +1,47 @@
+<!-- src/app/pages/retailer/provenance-viewer/provenance-viewer.component.html -->
+<div class="bg-white p-6 rounded-2xl shadow">
+  <h2 class="text-xl font-semibold mb-4">Provenance Viewer</h2>
+
+  <div class="space-y-4">
+    <div class="p-4 border rounded-lg">
+      <div class="flex justify-between">
+        <div>
+          <div class="font-bold">Batch: BATCH-TOM-001</div>
+          <div class="text-sm text-slate-500">Product: Organic Tomatoes</div>
+        </div>
+        <div class="text-sm text-slate-500">Harvest: 2025-11-20</div>
+      </div>
+
+      <div class="mt-3 text-sm text-slate-600">
+        <p>Farm: GreenField Farms, Sikar, Rajasthan</p>
+        <p>Certifications: Organic, PGS</p>
+        <p>
+          Blockchain TX:
+          <a class="text-indigo-600" href="#" (click)="verifyOnChain($event)">0xabc123...789</a>
+        </p>
+      </div>
+
+      <div class="mt-3 flex gap-2">
+        <button class="px-3 py-1 bg-sky-100 text-sky-800 rounded" (click)="viewFullTrace()">
+          View full trace
+        </button>
+        <button
+          class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded"
+          (click)="verifyOnChain($event)"
+        >
+          Verify on chain
+        </button>
+      </div>
+    </div>
+
+    <div class="p-4 border rounded-lg">
+      <h4 class="font-semibold">Event History</h4>
+      <ol class="mt-2 space-y-2 text-sm text-slate-600">
+        <li><b>2025-11-20</b> — Harvest recorded (Farmer)</li>
+        <li><b>2025-11-22</b> — Picked and packed (Farmer)</li>
+        <li><b>2025-11-25</b> — Received by Distributor (Sikar Warehouse)</li>
+        <li><b>2025-12-01</b> — Shipped to Retailer (GreenStore)</li>
+      </ol>
+    </div>
+  </div>
+</div>

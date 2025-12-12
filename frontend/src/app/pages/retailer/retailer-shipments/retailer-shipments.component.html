@@ -1,0 +1,37 @@
+<!-- src/app/pages/retailer/retailer-shipments/retailer-shipments.component.html -->
+<div class="bg-white p-6 rounded-2xl shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Shipments</h2>
+    <button class="px-4 py-2 bg-indigo-600 text-white rounded">Create Consignment</button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div *ngFor="let s of shipments" class="p-4 border rounded-lg">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="font-semibold">{{ s.id }}</h3>
+          <p class="text-sm text-slate-500">{{ s.carrier }} — ETA: {{ s.eta }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm">Items: {{ s.items }}</p>
+          <p class="text-xs mt-1">
+            <span class="px-2 py-1 rounded-full text-xs" [ngClass]="statusClass(s.status)">{{
+              s.status
+            }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div class="h-2 rounded-full bg-emerald-500" [style.width.%]="progress(s.status)"></div>
+        </div>
+        <div class="flex justify-between text-xs text-slate-500 mt-2">
+          <span>Picked</span>
+          <span>In transit</span>
+          <span>Delivered</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

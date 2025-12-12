@@ -1,3 +1,4 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin-guard';
@@ -46,7 +47,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/my-products/my-products').then((m) => m.MyProducts),
   },
 
-  // CONSUMER ROUTES (correct exported class names)
+  // CONSUMER ROUTES
   {
     path: 'consumer',
     canActivate: [AuthGuard],
@@ -87,7 +88,7 @@ export const routes: Routes = [
     ],
   },
 
-  // Admin routes (unchanged)
+  // ADMIN ROUTES
   {
     path: 'admin',
     canActivate: [AuthGuard, AdminGuard],
@@ -115,5 +116,59 @@ export const routes: Routes = [
     ],
   },
 
+  // RETAILER ROUTES (placed under src/app/pages/retailer/*)
+  // Parent route uses AuthGuard so only authenticated users can access retailer panel.
+  {
+    path: 'retailer',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/retailer/retailer-layout/retailer-layout.component').then(
+        (m) => m.RetailerLayoutComponent
+      ),
+    children: [
+      {
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'dashboard',
+      },
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/retailer/retailer-dashboard/retailer-dashboard.component').then(
+            (m) => m.RetailerDashboardComponent
+          ),
+      },
+      {
+        path: 'inventory',
+        loadComponent: () =>
+          import('./pages/retailer/retailer-inventory/retailer-inventory.component').then(
+            (m) => m.RetailerInventoryComponent
+          ),
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./pages/retailer/retailer-orders/retailer-orders.component').then(
+            (m) => m.RetailerOrdersComponent
+          ),
+      },
+      {
+        path: 'shipments',
+        loadComponent: () =>
+          import('./pages/retailer/retailer-shipments/retailer-shipments.component').then(
+            (m) => m.RetailerShipmentsComponent
+          ),
+      },
+      {
+        path: 'provenance',
+        loadComponent: () =>
+          import('./pages/retailer/provenance-viewer/provenance-viewer.component').then(
+            (m) => m.ProvenanceViewerComponent
+          ),
+      },
+    ],
+  },
+
+  // fallback
   { path: '**', redirectTo: '' },
 ];

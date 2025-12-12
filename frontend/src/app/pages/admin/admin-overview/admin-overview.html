@@ -2,13 +2,13 @@
   <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
     <h1 class="text-3xl font-bold text-black tracking-tight">System Overview</h1>
     <div class="flex items-center space-x-4">
-      <span *ngIf="lastUpdated" class="text-xs text-black-400">
+      <span *ngIf="lastUpdated" class="text-xs text-gray-500">
         Last updated: {{ lastUpdated | date : 'shortTime' }}
       </span>
       <button
         (click)="refreshData()"
         [disabled]="isLoading"
-        class="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-indigo-700 transition disabled:bg-indigo-400"
+        class="flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-green-700 transition disabled:bg-green-400"
       >
         <svg
           *ngIf="!isLoading"
@@ -25,21 +25,29 @@
             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.34 19.34M18 10V5h-.582m14.356 2A8.001 8.001 0 0019.66 4.66"
           ></path>
         </svg>
+
         <svg
           *ngIf="isLoading"
           class="animate-spin w-4 h-4 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
           xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
         >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
           <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.34 19.34M18 10V5h-.582m14.356 2A8.001 8.001 0 0019.66 4.66"
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           ></path>
         </svg>
+
         {{ isLoading ? 'Loading...' : 'Refresh Data' }}
       </button>
     </div>

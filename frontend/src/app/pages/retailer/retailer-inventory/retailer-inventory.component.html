@@ -1,0 +1,53 @@
+<!-- src/app/pages/retailer/retailer-inventory/retailer-inventory.component.html -->
+<div class="bg-white p-6 rounded-2xl shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Inventory</h2>
+    <div class="flex gap-2">
+      <button class="px-3 py-2 bg-indigo-600 text-white rounded">Add Stock</button>
+      <button class="px-3 py-2 bg-gray-100 rounded" (click)="exportCsv()">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left table-auto">
+      <thead class="text-xs text-slate-500 uppercase">
+        <tr>
+          <th class="px-4 py-2">Product</th>
+          <th class="px-4 py-2">Batch</th>
+          <th class="px-4 py-2">Qty</th>
+          <th class="px-4 py-2">Cost</th>
+          <th class="px-4 py-2">Sell Price</th>
+          <th class="px-4 py-2">Supplier</th>
+          <th class="px-4 py-2">Expiry</th>
+          <th class="px-4 py-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let it of items" class="border-t hover:bg-slate-50">
+          <td class="px-4 py-3 font-medium">{{ it.name }}</td>
+          <td class="px-4 py-3">{{ it.batchId }}</td>
+          <td class="px-4 py-3">
+            {{ it.qtyOnHand }} {{ it.unit }}
+            <span
+              *ngIf="it.qtyOnHand < lowThreshold"
+              class="ml-2 text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded"
+              >Low</span
+            >
+          </td>
+          <td class="px-4 py-3">₹ {{ it.costPrice }}</td>
+          <td class="px-4 py-3">₹ {{ it.sellPrice }}</td>
+          <td class="px-4 py-3">{{ it.supplier }}</td>
+          <td class="px-4 py-3">{{ it.expiryDate || '-' }}</td>
+          <td class="px-4 py-3">
+            <button class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded" (click)="receive(it)">
+              Receive
+            </button>
+            <button class="px-3 py-1 bg-sky-100 text-sky-800 rounded ml-2" (click)="adjust(it)">
+              Adjust
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

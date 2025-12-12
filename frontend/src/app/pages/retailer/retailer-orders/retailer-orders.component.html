@@ -1,0 +1,42 @@
+<!-- src/app/pages/retailer/retailer-orders/retailer-orders.component.html -->
+<div class="bg-white p-6 rounded-2xl shadow">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Purchase Orders</h2>
+    <button class="px-4 py-2 bg-indigo-600 text-white rounded">Create PO</button>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left table-auto">
+      <thead class="text-xs text-slate-500 uppercase">
+        <tr>
+          <th class="px-4 py-2">PO ID</th>
+          <th class="px-4 py-2">Supplier</th>
+          <th class="px-4 py-2">Created</th>
+          <th class="px-4 py-2">Items</th>
+          <th class="px-4 py-2">Total</th>
+          <th class="px-4 py-2">Status</th>
+          <th class="px-4 py-2">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let o of orders" class="border-t hover:bg-slate-50">
+          <td class="px-4 py-3">{{ o.id }}</td>
+          <td class="px-4 py-3">{{ o.supplier }}</td>
+          <td class="px-4 py-3">{{ o.createdAt }}</td>
+          <td class="px-4 py-3">{{ o.items }}</td>
+          <td class="px-4 py-3">₹ {{ o.total }}</td>
+          <td class="px-4 py-3">
+            <span class="px-3 py-1 rounded-full text-xs" [ngClass]="statusClass(o.status)">{{
+              o.status
+            }}</span>
+          </td>
+          <td class="px-4 py-3">
+            <button (click)="view(o)" class="px-3 py-1 bg-sky-100 text-sky-800 rounded">
+              View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
