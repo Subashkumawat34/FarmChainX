@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,17 +38,20 @@ public class ProductController {
     private final UserRepository userRepository;
     private final SupplyChainLogRepository supplyChainLogRepository;
     private final FeedbackRepository feedbackRepository;
+    private final com.farmchainX.farmchainX.service.GroqAIService groqAIService;
 
     public ProductController(ProductService productService,
                              UserRepository userRepository,
                              ProductRepository productRepository,
                              SupplyChainLogRepository supplyChainLogRepository,
-                             FeedbackRepository feedbackRepository) {
+                             FeedbackRepository feedbackRepository,
+                             com.farmchainX.farmchainX.service.GroqAIService groqAIService) {
         this.productService = productService;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.supplyChainLogRepository = supplyChainLogRepository;
         this.feedbackRepository = feedbackRepository;
+        this.groqAIService = groqAIService;
     }
 
     @PostMapping("/products/upload")
@@ -103,12 +107,18 @@ public class ProductController {
             saved.ensurePublicUuid();
             productRepository.save(saved);
 
-            return ResponseEntity.ok(Map.of(
-                    "id", saved.getId(),
-                    "message", "Product uploaded successfully",
-                    "qualityGrade", saved.getQualityGrade(),
-                    "confidenceScore", saved.getConfidenceScore()
-            ));
+            // Generate AI prediction using Groq
+            Map<String, Object> aiPrediction = groqAIService.generateFarmPrediction(saved);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("id", saved.getId());
+            response.put("message", "Product uploaded successfully");
+            response.put("qualityGrade", saved.getQualityGrade());
+            response.put("confidenceScore", saved.getConfidenceScore());
+            response.put("aiPrediction", aiPrediction);
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "Upload failed: " + e.getMessage()));
         }

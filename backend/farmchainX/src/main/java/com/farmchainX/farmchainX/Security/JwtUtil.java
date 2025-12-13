@@ -61,13 +61,29 @@ public class JwtUtil {
         return extractedEmail.equals(email) && !isExpired(token);
     }
 
-    private boolean isExpired(String token) {
-        Date exp = Jwts.parserBuilder()
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return exp.before(new Date());
+                .parseClaimsJws(token);
+            return !isExpired(token);
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    private boolean isExpired(String token) {
+        try {
+            Date exp = Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+            return exp.before(new Date());
+        } catch (JwtException e) {
+            return true;
+        }
     }
 }

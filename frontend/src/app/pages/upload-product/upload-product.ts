@@ -21,6 +21,11 @@ export class UploadProduct {
 
   loading = false;
   today = this.getTodayString(); // used as max for date input
+  
+  // AI Prediction properties
+  showPrediction = false;
+  aiPrediction: any = null;
+  productId: number | null = null;
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -89,8 +94,16 @@ export class UploadProduct {
       .subscribe({
         next: (res) => {
           this.loading = false;
-          alert(`Product uploaded! ID = ${res.id}`);
-          this.router.navigate(['/dashboard']);
+          if (res.success && res.aiPrediction) {
+            // Store AI prediction and show modal
+            this.aiPrediction = res.aiPrediction;
+            this.productId = res.id;
+            this.showPrediction = true;
+          } else {
+            // Fallback if no AI prediction
+            alert(`Product uploaded! ID = ${res.id}`);
+            this.router.navigate(['/dashboard']);
+          }
         },
         error: (err) => {
           this.loading = false;
@@ -101,5 +114,19 @@ export class UploadProduct {
           alert(`Upload failed: ${serverMsg}`);
         }
       });
+  }
+
+  closePredictionModal() {
+    this.showPrediction = false;
+    this.router.navigate(['/dashboard']);
+  }
+
+  getQualityColor(grade: string): string {
+    if (!grade) return 'slate';
+    const gradeUpper = grade.toUpperCase();
+    if (gradeUpper.includes('A+') || gradeUpper === 'A') return 'emerald';
+    if (gradeUpper.includes('B+') || gradeUpper === 'B') return 'yellow';
+    if (gradeUpper === 'C') return 'orange';
+    return 'slate';
   }
 }

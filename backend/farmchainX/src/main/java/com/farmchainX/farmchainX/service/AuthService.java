@@ -37,8 +37,34 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest request) {
+        // Validate name
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name is required");
+        }
+        
+        // Normalize email to lowercase
+        String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : null;
+        
+        if (email == null || email.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        // Validate password
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
+        }
+        
+        if (request.getPassword().length() < 6) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters");
+        }
+
+        // Validate role
+        if (request.getRole() == null || request.getRole().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Role is required");
+        }
+
+        // Use case-insensitive check to prevent duplicate emails with different cases
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists!");
         }
 
@@ -55,24 +81,35 @@ public class AuthService {
 
         User user = new User();
         user.setName(request.getName());
-        user.setEmail(request.getEmail());
+        user.setEmail(email);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRoles(Set.of(role));
         userRepository.save(user);
 
-        return new AuthResponse(null, role.getName(), request.getEmail());
+        return new AuthResponse(null, role.getName(), email);
     }
 
 
 
 
     public AuthResponse login(LoginRequest login) {
+        // Validate and trim email
+        if (login.getEmail() == null || login.getEmail().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
+        }
+        
+        if (login.getPassword() == null || login.getPassword().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
+        }
 
-        User user = userRepository.findByEmail(login.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        String email = login.getEmail().trim().toLowerCase();
+        // Use case-insensitive lookup to handle existing users with mixed-case emails
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
 
+        // Verify password - BCrypt handles the comparison securely
         if (!passwordEncoder.matches(login.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid password!");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
 
         // ✅ Check if user has admin role
@@ -93,5 +130,45 @@ public class AuthService {
         String token = jwtUtil.generateToken(user.getEmail(), primaryRole, user.getId());
 
         return new AuthResponse(token, primaryRole, user.getEmail());
+    }
+
+    public AuthResponse refreshToken(String refreshToken) {
+        if (refreshToken == null || refreshToken.trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh token is required");
+        }
+
+        // Validate refresh token and extract username
+        try {
+            if (!jwtUtil.validateToken(refreshToken)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+            }
+
+            String email = jwtUtil.extractUsername(refreshToken);
+            User user = userRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+
+            // Determine primary role
+            boolean isAdmin = user.getRoles().stream()
+                    .anyMatch(r -> r.getName().equals("ROLE_ADMIN"));
+            String primaryRole = isAdmin
+                    ? "ROLE_ADMIN"
+                    : user.getRoles().stream()
+                        .map(Role::getName)
+                        .findFirst()
+                        .orElse("ROLE_CONSUMER");
+
+            // Generate new access token
+            String newToken = jwtUtil.generateToken(user.getEmail(), primaryRole, user.getId());
+
+            return new AuthResponse(newToken, primaryRole, user.getEmail());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token");
+        }
+    }
+
+    public void logout(String token) {
+        // For stateless JWT, logout is typically handled client-side by removing the token
+        // If you want to implement token blacklisting, you would need Redis or similar
+        // For now, this is a no-op as JWT tokens are stateless
     }
 }
