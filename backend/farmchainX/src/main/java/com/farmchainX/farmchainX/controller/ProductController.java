@@ -16,7 +16,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.farmchainX.farmchainX.model.Product;
@@ -41,11 +47,11 @@ public class ProductController {
     private final com.farmchainX.farmchainX.service.GroqAIService groqAIService;
 
     public ProductController(ProductService productService,
-                             UserRepository userRepository,
-                             ProductRepository productRepository,
-                             SupplyChainLogRepository supplyChainLogRepository,
-                             FeedbackRepository feedbackRepository,
-                             com.farmchainX.farmchainX.service.GroqAIService groqAIService) {
+            UserRepository userRepository,
+            ProductRepository productRepository,
+            SupplyChainLogRepository supplyChainLogRepository,
+            FeedbackRepository feedbackRepository,
+            com.farmchainX.farmchainX.service.GroqAIService groqAIService) {
         this.productService = productService;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
@@ -66,19 +72,23 @@ public class ProductController {
             Principal principal) throws IOException {
 
         try {
-            if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
-            if (imageFile == null || imageFile.isEmpty()) return ResponseEntity.badRequest().body(Map.of("error", "Image is required"));
+            if (principal == null) {
+                return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+            }
+            if (imageFile == null || imageFile.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Image is required"));
+            }
 
             String email = principal.getName();
             User farmer = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
             com.cloudinary.Cloudinary cloudinary = new com.cloudinary.Cloudinary(
-            		"cloudinary://576328924368997:w91CTYnN6GDpASZhjff1oyeKIwk@dui3x1lur"   //Please change the infos
+                    "cloudinary://576328924368997:w91CTYnN6GDpASZhjff1oyeKIwk@dui3x1lur" //Please change the infos
             );
             java.util.Map uploadResult = cloudinary.uploader().upload(
-                imageFile.getBytes(),
-                com.cloudinary.utils.ObjectUtils.asMap("folder", "farmchainx/products")
+                    imageFile.getBytes(),
+                    com.cloudinary.utils.ObjectUtils.asMap("folder", "farmchainx/products")
             );
             String imagePath = uploadResult.get("secure_url").toString();
 
@@ -132,7 +142,9 @@ public class ProductController {
             @RequestParam(defaultValue = "9") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
 
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        }
 
         String email = principal.getName();
         User farmer = userRepository.findByEmail(email)
@@ -156,7 +168,9 @@ public class ProductController {
     @PreAuthorize("hasAnyRole('FARMER','ADMIN')")
     @PostMapping("/products/{id}/qrcode")
     public ResponseEntity<?> generateProductQrCode(@PathVariable Long id, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        }
 
         String email = principal.getName();
         User currentUser = userRepository.findByEmail(email)
@@ -173,9 +187,9 @@ public class ProductController {
 
         String qrPath = productService.generateProductQr(id);
         return ResponseEntity.ok(Map.of(
-            "message", "QR Code generated successfully",
-            "qrPath", qrPath,
-            "verifyUrl", "https://yourdomain.com/verify/" + product.getPublicUuid()
+                "message", "QR Code generated successfully",
+                "qrPath", qrPath,
+                "verifyUrl", "https://yourdomain.com/verify/" + product.getPublicUuid()
         ));
     }
 
@@ -226,8 +240,8 @@ public class ProductController {
             if (principal != null) {
                 User user = userRepository.findByEmail(principal.getName()).orElse(null);
                 if (user != null) {
-                    canUpdate = user.getRoles().stream().anyMatch(role ->
-                        "ROLE_DISTRIBUTOR".equals(role.getName()) || "ROLE_RETAILER".equals(role.getName()));
+                    canUpdate = user.getRoles().stream().anyMatch(role
+                            -> "ROLE_DISTRIBUTOR".equals(role.getName()) || "ROLE_RETAILER".equals(role.getName()));
                 }
             }
             data.put("canUpdate", canUpdate);
@@ -237,15 +251,15 @@ public class ProductController {
                 User user = userRepository.findByEmail(principal.getName()).orElse(null);
                 if (user != null) {
                     boolean isConsumer = user.getRoles().stream()
-                        .anyMatch(r -> "ROLE_CONSUMER".equals(r.getName()));
+                            .anyMatch(r -> "ROLE_CONSUMER".equals(r.getName()));
                     if (isConsumer) {
                         Long productId = null;
                         if (data.containsKey("productId") && data.get("productId") instanceof Number) {
                             productId = ((Number) data.get("productId")).longValue();
                         } else {
                             productId = productRepository.findByPublicUuid(uuid)
-                                .map(p -> p.getId())
-                                .orElse(null);
+                                    .map(p -> p.getId())
+                                    .orElse(null);
                         }
 
                         if (productId != null) {

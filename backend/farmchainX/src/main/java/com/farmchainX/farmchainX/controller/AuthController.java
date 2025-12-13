@@ -1,20 +1,29 @@
 package com.farmchainX.farmchainX.controller;
 
-import com.farmchainX.farmchainX.dto.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.farmchainX.farmchainX.dto.AuthResponse;
+import com.farmchainX.farmchainX.dto.LoginRequest;
+import com.farmchainX.farmchainX.dto.RegisterRequest;
+import com.farmchainX.farmchainX.dto.TokenRefreshRequest;
 import com.farmchainX.farmchainX.service.AuthService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -100,7 +109,7 @@ public class AuthController {
 
     private ResponseEntity<Map<String, String>> buildErrorResponse(Exception e) {
         Map<String, String> errorResponse = new HashMap<>();
-        
+
         if (e instanceof org.springframework.web.server.ResponseStatusException statusEx) {
             String reason = statusEx.getReason();
             if (reason == null || reason.isEmpty()) {
@@ -113,7 +122,7 @@ public class AuthController {
             errorResponse.put("message", reason);
             return ResponseEntity.status(statusEx.getStatusCode()).body(errorResponse);
         }
-        
+
         errorResponse.put("error", "An unexpected error occurred");
         errorResponse.put("message", e.getMessage() != null ? e.getMessage() : "Internal server error");
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);

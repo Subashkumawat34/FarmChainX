@@ -1,13 +1,21 @@
 package com.farmchainX.farmchainX.service;
 
-import com.farmchainX.farmchainX.model.Product;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.*;
+import com.farmchainX.farmchainX.model.Product;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class GroqAIService {
@@ -43,7 +51,7 @@ public class GroqAIService {
 
             List<Map<String, String>> messages = new ArrayList<>();
             messages.add(Map.of("role", "system", "content",
-                "You are an expert agricultural advisor AI. Analyze farm product data and provide actionable insights including quality prediction, market readiness, storage recommendations, and optimal selling timeframe. Return response ONLY in valid JSON format without any markdown code blocks or additional text."));
+                    "You are an expert agricultural advisor AI. Analyze farm product data and provide actionable insights including quality prediction, market readiness, storage recommendations, and optimal selling timeframe. Return response ONLY in valid JSON format without any markdown code blocks or additional text."));
             messages.add(Map.of("role", "user", "content", prompt));
 
             requestBody.put("messages", messages);
@@ -86,11 +94,11 @@ public class GroqAIService {
             
             Consider soil quality, pesticide usage, freshness based on harvest date, and location climate.
             """,
-            product.getCropName() != null ? product.getCropName() : "Unknown",
-            product.getSoilType() != null ? product.getSoilType() : "Unknown",
-            product.getPesticides() != null ? product.getPesticides() : "None",
-            product.getHarvestDate() != null ? product.getHarvestDate().toString() : "Unknown",
-            product.getGpsLocation() != null ? product.getGpsLocation() : "Unknown"
+                product.getCropName() != null ? product.getCropName() : "Unknown",
+                product.getSoilType() != null ? product.getSoilType() : "Unknown",
+                product.getPesticides() != null ? product.getPesticides() : "None",
+                product.getHarvestDate() != null ? product.getHarvestDate().toString() : "Unknown",
+                product.getGpsLocation() != null ? product.getGpsLocation() : "Unknown"
         );
     }
 
@@ -115,12 +123,12 @@ public class GroqAIService {
                 prediction.put("qualityGrade", product.getQualityGrade() != null ? product.getQualityGrade() : "B");
             }
             if (!prediction.containsKey("qualityScore")) {
-                prediction.put("qualityScore", product.getConfidenceScore() != null ? 
-                    (int)(product.getConfidenceScore() * 100) : 75);
+                prediction.put("qualityScore", product.getConfidenceScore() != null
+                        ? (int) (product.getConfidenceScore() * 100) : 75);
             }
             if (!prediction.containsKey("confidence")) {
-                prediction.put("confidence", product.getConfidenceScore() != null ? 
-                    (int)(product.getConfidenceScore() * 100) : 85);
+                prediction.put("confidence", product.getConfidenceScore() != null
+                        ? (int) (product.getConfidenceScore() * 100) : 85);
             }
 
             return prediction;
@@ -132,8 +140,10 @@ public class GroqAIService {
     }
 
     private String extractJsonFromResponse(String content) {
-        if (content == null) return "{}";
-        
+        if (content == null) {
+            return "{}";
+        }
+
         // Remove markdown code blocks if present
         String cleaned = content.trim();
         if (cleaned.startsWith("```json")) {
@@ -144,37 +154,36 @@ public class GroqAIService {
         if (cleaned.endsWith("```")) {
             cleaned = cleaned.substring(0, cleaned.length() - 3);
         }
-        
+
         // Find JSON object boundaries
         int startIdx = cleaned.indexOf("{");
         int endIdx = cleaned.lastIndexOf("}");
-        
+
         if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
             return cleaned.substring(startIdx, endIdx + 1);
         }
-        
+
         return cleaned.trim();
     }
 
     private Map<String, Object> createFallbackPrediction(Product product) {
         Map<String, Object> fallback = new HashMap<>();
         fallback.put("qualityGrade", product.getQualityGrade() != null ? product.getQualityGrade() : "B");
-        fallback.put("qualityScore", product.getConfidenceScore() != null ? 
-            (int)(product.getConfidenceScore() * 100) : 75);
-        fallback.put("confidence", product.getConfidenceScore() != null ? 
-            (int)(product.getConfidenceScore() * 100) : 85);
+        fallback.put("qualityScore", product.getConfidenceScore() != null
+                ? (int) (product.getConfidenceScore() * 100) : 75);
+        fallback.put("confidence", product.getConfidenceScore() != null
+                ? (int) (product.getConfidenceScore() * 100) : 85);
         fallback.put("marketReadiness", "Ready for market");
         fallback.put("storageRecommendation", "Store in cool, dry place. Maintain proper ventilation.");
         fallback.put("optimalSellingWindow", "1-3 days after harvest");
         fallback.put("priceEstimate", "Market price varies");
         fallback.put("insights", Arrays.asList(
-            "Product appears to be in good condition",
-            "Monitor storage conditions regularly",
-            "Consider local market demand"
+                "Product appears to be in good condition",
+                "Monitor storage conditions regularly",
+                "Consider local market demand"
         ));
         fallback.put("warnings", new ArrayList<>());
         fallback.put("certificationEligibility", "Conventional");
         return fallback;
     }
 }
-

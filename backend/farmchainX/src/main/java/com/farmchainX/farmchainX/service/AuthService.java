@@ -1,10 +1,13 @@
 package com.farmchainX.farmchainX.service;
 
+import java.util.Set;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.farmchainX.farmchainX.Security.JwtUtil;
 import com.farmchainX.farmchainX.dto.AuthResponse;
 import com.farmchainX.farmchainX.dto.LoginRequest;
 import com.farmchainX.farmchainX.dto.RegisterRequest;
@@ -12,9 +15,6 @@ import com.farmchainX.farmchainX.model.Role;
 import com.farmchainX.farmchainX.model.User;
 import com.farmchainX.farmchainX.repository.RoleRepository;
 import com.farmchainX.farmchainX.repository.UserRepository;
-import com.farmchainX.farmchainX.Security.JwtUtil;
-
-import java.util.Set;
 
 @Service
 public class AuthService {
@@ -41,10 +41,10 @@ public class AuthService {
         if (request.getName() == null || request.getName().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Name is required");
         }
-        
+
         // Normalize email to lowercase
         String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : null;
-        
+
         if (email == null || email.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
         }
@@ -53,7 +53,7 @@ public class AuthService {
         if (request.getPassword() == null || request.getPassword().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
         }
-        
+
         if (request.getPassword().length() < 6) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password must be at least 6 characters");
         }
@@ -89,15 +89,12 @@ public class AuthService {
         return new AuthResponse(null, role.getName(), email);
     }
 
-
-
-
     public AuthResponse login(LoginRequest login) {
         // Validate and trim email
         if (login.getEmail() == null || login.getEmail().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email is required");
         }
-        
+
         if (login.getPassword() == null || login.getPassword().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Password is required");
         }
@@ -121,10 +118,10 @@ public class AuthService {
         String primaryRole = isAdmin
                 ? "ROLE_ADMIN"
                 : user.getRoles()
-                    .stream()
-                    .map(Role::getName)
-                    .findFirst()
-                    .orElse("ROLE_CONSUMER");
+                        .stream()
+                        .map(Role::getName)
+                        .findFirst()
+                        .orElse("ROLE_CONSUMER");
 
         // ✅ Generate token
         String token = jwtUtil.generateToken(user.getEmail(), primaryRole, user.getId());
@@ -153,9 +150,9 @@ public class AuthService {
             String primaryRole = isAdmin
                     ? "ROLE_ADMIN"
                     : user.getRoles().stream()
-                        .map(Role::getName)
-                        .findFirst()
-                        .orElse("ROLE_CONSUMER");
+                            .map(Role::getName)
+                            .findFirst()
+                            .orElse("ROLE_CONSUMER");
 
             // Generate new access token
             String newToken = jwtUtil.generateToken(user.getEmail(), primaryRole, user.getId());
