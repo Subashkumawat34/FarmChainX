@@ -1,0 +1,34 @@
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">Farmer Procurement</h2>
+
+  <table class="w-full border-collapse">
+    <thead class="text-sm text-slate-500 border-b">
+      <tr>
+        <th class="text-left py-2">Farmer</th>
+        <th>Crop</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of procurements" class="border-b hover:bg-slate-50">
+        <td class="py-2">{{ p.farmer }}</td>
+        <td>{{ p.crop }}</td>
+        <td>{{ p.quantity }}</td>
+        <td>{{ p.price }}</td>
+        <td>
+          <span
+            class="px-2 py-1 rounded text-xs"
+            [ngClass]="{
+              'bg-yellow-100 text-yellow-700': p.status === 'Pending',
+              'bg-green-100 text-green-700': p.status !== 'Pending'
+            }"
+          >
+            {{ p.status }}
+          </span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

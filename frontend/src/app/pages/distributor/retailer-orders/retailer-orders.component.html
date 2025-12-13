@@ -1,0 +1,12 @@
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">Retailer Orders</h2>
+
+  <table class="w-full">
+    <tr *ngFor="let o of orders" class="border-b">
+      <td class="py-2">{{ o.retailer }}</td>
+      <td>{{ o.items }} items</td>
+      <td>{{ o.total }}</td>
+      <td>{{ o.status }}</td>
+    </tr>
+  </table>
+</div>

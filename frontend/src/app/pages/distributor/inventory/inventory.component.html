@@ -1,0 +1,12 @@
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">Inventory</h2>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div *ngFor="let i of items" class="border p-4 rounded-lg">
+      <h3 class="font-semibold">{{ i.product }}</h3>
+      <p class="text-sm">Stock: {{ i.stock }}</p>
+      <p class="text-sm">Grade: {{ i.grade }}</p>
+      <p class="text-sm">Location: {{ i.location }}</p>
+    </div>
+  </div>
+</div>

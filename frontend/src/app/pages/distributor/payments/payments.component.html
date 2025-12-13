@@ -1,0 +1,9 @@
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">Payments</h2>
+
+  <ul>
+    <li *ngFor="let p of payments" class="py-2 border-b">
+      {{ p.party }} → {{ p.amount }} ({{ p.status }})
+    </li>
+  </ul>
+</div>

@@ -115,6 +115,123 @@ export const routes: Routes = [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
     ],
   },
+  // =======================
+  // DISTRIBUTOR ROUTES
+  // =======================
+  {
+    path: 'distributor',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/distributor/distributor-layout/distributor-layout.component').then(
+        (m) => m.DistributorLayoutComponent
+      ),
+    children: [
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+
+      // Dashboard
+      {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./pages/distributor/distributor-dashboard/distributor-dashboard.component').then(
+            (m) => m.DistributorDashboardComponent
+          ),
+      },
+
+      // Profile
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./pages/distributor/distributor-profile/distributor-profile.component').then(
+            (m) => m.DistributorProfileComponent
+          ),
+      },
+
+      // Farmer Procurement
+      {
+        path: 'farmer-procurement',
+        loadComponent: () =>
+          import('./pages/distributor/farmer-procurement/farmer-procurement.component').then(
+            (m) => m.FarmerProcurementComponent
+          ),
+      },
+
+      // Procurement Detail
+      {
+        path: 'procurement-detail',
+        loadComponent: () =>
+          import('./pages/distributor/procurement-detail/procurement-detail.component').then(
+            (m) => m.ProcurementDetailComponent
+          ),
+      },
+
+      // Inventory
+      {
+        path: 'inventory',
+        loadComponent: () =>
+          import('./pages/distributor/inventory/inventory.component').then(
+            (m) => m.InventoryComponent
+          ),
+      },
+
+      // Logistics
+      {
+        path: 'logistics',
+        loadComponent: () =>
+          import('./pages/distributor/logistics/logistics.component').then(
+            (m) => m.LogisticsComponent
+          ),
+      },
+
+      // Retailer Orders
+      {
+        path: 'retailer-orders',
+        loadComponent: () =>
+          import('./pages/distributor/retailer-orders/retailer-orders.component').then(
+            (m) => m.RetailerOrdersComponent
+          ),
+      },
+
+      // Order Detail
+      {
+        path: 'order-detail',
+        loadComponent: () =>
+          import('./pages/distributor/order-detail/order-detail.component').then(
+            (m) => m.OrderDetailComponent
+          ),
+      },
+
+      // Quality Grading
+      {
+        path: 'quality-grading',
+        loadComponent: () =>
+          import('./pages/distributor/quality-grading/quality-grading.component').then(
+            (m) => m.QualityGradingComponent
+          ),
+      },
+
+      // Trace Management
+      {
+        path: 'trace-management',
+        loadComponent: () =>
+          import('./pages/distributor/trace-management/trace-management.component').then(
+            (m) => m.TraceManagementComponent
+          ),
+      },
+
+      // Payments
+      {
+        path: 'payments',
+        loadComponent: () =>
+          import('./pages/distributor/payments/payments.component').then(
+            (m) => m.PaymentsComponent
+          ),
+      },
+    ],
+  },
 
   // RETAILER ROUTES (placed under src/app/pages/retailer/*)
   // Parent route uses AuthGuard so only authenticated users can access retailer panel.

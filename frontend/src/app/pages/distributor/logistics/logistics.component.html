@@ -1,0 +1,10 @@
+<div class="bg-white p-6 rounded-xl shadow">
+  <h2 class="text-xl font-bold mb-4">Logistics</h2>
+
+  <ul class="space-y-3">
+    <li *ngFor="let s of shipments" class="p-3 border rounded">
+      <b>{{ s.id }}</b> → {{ s.destination }}
+      <span class="float-right text-sm">{{ s.status }}</span>
+    </li>
+  </ul>
+</div>
