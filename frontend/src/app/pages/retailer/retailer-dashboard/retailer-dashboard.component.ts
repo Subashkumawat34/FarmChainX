@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
@@ -13,19 +14,21 @@ export class RetailerDashboardComponent implements AfterViewInit {
   @ViewChild('barChart', { static: true }) barChartRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('pieChart', { static: true }) pieChartRef!: ElementRef<HTMLCanvasElement>;
 
-  inventoryValue = 124500;
-  openPOs = 6;
-  incomingShipments = 3;
-  lowStock = 4;
+  constructor(private http: HttpClient) { }
 
-  recentOrders = [
-    { id: 'PO-20251201-01', supplier: 'GreenFoods', items: 3, total: 2400, status: 'Shipped' },
-    { id: 'PO-20251202-02', supplier: 'SikarFarm', items: 5, total: 4300, status: 'Processing' },
-    { id: 'PO-20251203-03', supplier: 'RiverHarvest', items: 2, total: 1200, status: 'Delivered' },
-  ];
+  stats: any = {
+    inventoryValue: 0,
+    openPOs: 0,
+    incomingShipments: 0,
+    lowStock: 0
+  };
+
+  recentOrders: any[] = [];
 
   ngAfterViewInit(): void {
-    // Bar chart
+    this.fetchDashboardData();
+
+    // Mock Chart Data (Backend endpoint /sales-chart exists but for now we keep this)
     const barCtx = this.barChartRef.nativeElement.getContext('2d')!;
     new Chart(barCtx, {
       type: 'bar',
@@ -38,7 +41,6 @@ export class RetailerDashboardComponent implements AfterViewInit {
       options: { responsive: true, plugins: { legend: { display: false } } },
     });
 
-    // Pie chart
     const pieCtx = this.pieChartRef.nativeElement.getContext('2d')!;
     new Chart(pieCtx, {
       type: 'pie',
@@ -50,13 +52,38 @@ export class RetailerDashboardComponent implements AfterViewInit {
     });
   }
 
+  fetchDashboardData() {
+    // 1. Fetch Stats
+    this.http.get<any>('/api/retailer/dashboard-stats').subscribe({
+      next: (data) => {
+        this.stats = data;
+      },
+      error: (err) => console.error('Failed to load stats', err)
+    });
+
+    // 2. Fetch Recent Orders
+    this.http.get<any[]>('/api/retailer/orders').subscribe({
+      next: (orders) => {
+        this.recentOrders = orders.map(o => ({
+          id: o.id,
+          supplier: 'Supplier ' + o.supplierId, // Mock name as we only have ID
+          items: o.items,
+          total: o.totalAmount,
+          status: o.status
+        }));
+      },
+      error: (err) => console.error('Failed to load orders', err)
+    });
+  }
+
   statusClass(s: string) {
-    switch (s) {
-      case 'Delivered':
+    if (!s) return 'bg-gray-100 text-gray-800';
+    switch (s.toLowerCase()) {
+      case 'delivered':
         return 'bg-emerald-100 text-emerald-800';
-      case 'Shipped':
+      case 'shipped':
         return 'bg-sky-100 text-sky-800';
-      case 'Processing':
+      case 'processing':
         return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -64,8 +91,7 @@ export class RetailerDashboardComponent implements AfterViewInit {
   }
 
   refresh() {
-    // placeholder for refresh action - wire to API later
-    console.log('Refresh dashboard');
+    this.fetchDashboardData();
   }
 
   export() {

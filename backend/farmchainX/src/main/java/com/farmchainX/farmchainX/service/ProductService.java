@@ -33,9 +33,9 @@ public class ProductService {
     private final SupplyChainLogRepository supplyChainLogRepository;
 
     public ProductService(ProductRepository productRepository,
-                          UserRepository userRepository,
-                          AiService aiService,
-                          SupplyChainLogRepository supplyChainLogRepository) {
+            UserRepository userRepository,
+            AiService aiService,
+            SupplyChainLogRepository supplyChainLogRepository) {
         this.productRepository = productRepository;
         this.userRepository = userRepository;
         this.aiService = aiService;
@@ -51,7 +51,8 @@ public class ProductService {
                 throw new IllegalStateException("Image path missing for grading");
             }
 
-            // ✅ Let AiService handle URL or local file. Do NOT pre-check with File.exists() here.
+            // ✅ Let AiService handle URL or local file. Do NOT pre-check with File.exists()
+            // here.
             Map<String, Object> aiResult = aiService.predictQuality(path);
 
             if (aiResult != null && aiResult.get("grade") != null && aiResult.get("confidence") != null) {
@@ -110,14 +111,17 @@ public class ProductService {
     }
 
     public byte[] getProductQRImage(Long productId) {
-        Product product = productRepository.findById(productId).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
         String qrPath = product.getQrCodePath();
-        if (qrPath == null || qrPath.isEmpty()) throw new RuntimeException("QR code not generated yet for this product");
+        if (qrPath == null || qrPath.isEmpty())
+            throw new RuntimeException("QR code not generated yet for this product");
         try {
             Path path1 = Path.of(qrPath.startsWith("/") ? qrPath.substring(1) : qrPath);
             Path path2 = Path.of("uploads", "qrcodes", "product_" + productId + ".png");
             Path actual = Files.exists(path1) ? path1 : (Files.exists(path2) ? path2 : null);
-            if (actual == null) throw new RuntimeException("QR file not found.");
+            if (actual == null)
+                throw new RuntimeException("QR file not found.");
             return Files.readAllBytes(actual);
         } catch (IOException e) {
             throw new RuntimeException("Unable to read the QR code image: " + e.getMessage(), e);
@@ -134,10 +138,12 @@ public class ProductService {
         data.put("confidence", product.getConfidenceScore() != null ? product.getConfidenceScore() : 0.0);
         data.put("imageUrl", product.getImagePath());
         data.put("gpsLocation", product.getGpsLocation());
-        data.put("displayLocation", reverseToName(product.getGpsLocation()));
+        data.put("displayLocation", resolveAddressFromGps(product.getGpsLocation()));
         data.put("productId", product.getId());
         data.put("publicUuid", product.getPublicUuid());
+        data.put("publicUuid", product.getPublicUuid());
         data.put("qrCodePath", product.getQrCodePath());
+        data.put("price", product.getPrice());
 
         List<SupplyChainLog> logs = supplyChainLogRepository.findByProductIdOrderByTimestampAsc(productId);
         List<Map<String, Object>> trackingHistory = logs.stream().map(log -> {
@@ -146,10 +152,13 @@ public class ProductService {
             m.put("productId", log.getProductId());
             m.put("fromUserId", log.getFromUserId());
             m.put("toUserId", log.getToUserId());
-            m.put("location", log.getLocation() != null && !log.getLocation().isBlank() ? log.getLocation() : "Farm Origin");
-            m.put("notes", log.getNotes() != null && !log.getNotes().isBlank() ? log.getNotes() : "Product harvested and entered supply chain");
+            m.put("location",
+                    log.getLocation() != null && !log.getLocation().isBlank() ? log.getLocation() : "Farm Origin");
+            m.put("notes", log.getNotes() != null && !log.getNotes().isBlank() ? log.getNotes()
+                    : "Product harvested and entered supply chain");
             m.put("timestamp", log.getTimestamp() != null ? log.getTimestamp() : LocalDateTime.now());
-            m.put("createdBy", log.getCreatedBy() != null && !log.getCreatedBy().isBlank() ? log.getCreatedBy() : "Farmer");
+            m.put("createdBy",
+                    log.getCreatedBy() != null && !log.getCreatedBy().isBlank() ? log.getCreatedBy() : "Farmer");
             m.put("prevHash", log.getPrevHash());
             m.put("hash", log.getHash());
             m.put("confirmed", log.isConfirmed());
@@ -168,7 +177,8 @@ public class ProductService {
             initial.put("toUserId", null);
             initial.put("location", "Farm Origin");
             initial.put("notes", "Product harvested and entered the FarmChainX blockchain");
-            initial.put("timestamp", product.getHarvestDate() != null ? product.getHarvestDate().atStartOfDay() : LocalDateTime.now());
+            initial.put("timestamp",
+                    product.getHarvestDate() != null ? product.getHarvestDate().atStartOfDay() : LocalDateTime.now());
             initial.put("createdBy", "Farmer");
             initial.put("prevHash", "");
             initial.put("hash", "");
@@ -218,29 +228,86 @@ public class ProductService {
             } else if (userPrincipal instanceof String s) {
                 data.put("requestedBy", s);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return data;
     }
 
-    private String reverseToName(String gps) {
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    public String resolveAddressFromGps(String gps) {
         try {
-            if (gps == null || !gps.contains(",")) return gps;
+            if (gps == null || !gps.contains(","))
+                return gps;
             String[] parts = gps.split(",");
             double lat = Double.parseDouble(parts[0].trim());
             double lon = Double.parseDouble(parts[1].trim());
+
+            // Add a simple cache or delay if needed, but for now just call the API
+            // Ideally, this is called ONLY on upload, so rate limits are less of an issue
+            // than N+1 reads
+
             String url = "https://nominatim.openstreetmap.org/reverse?format=json&lat="
                     + URLEncoder.encode(String.valueOf(lat), StandardCharsets.UTF_8)
                     + "&lon=" + URLEncoder.encode(String.valueOf(lon), StandardCharsets.UTF_8)
                     + "&zoom=10&addressdetails=1";
+
             RestTemplate rest = new RestTemplate();
-            Map<?, ?> response = rest.getForObject(url, Map.class);
-            if (response == null) return gps;
-            Object display = response.get("display_name");
-            if (display == null) return gps;
-            String[] tokens = display.toString().split(",");
-            return tokens.length > 0 ? tokens[0].trim() : gps;
+            // User Agent is required by Nominatim
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.add("User-Agent", "FarmChainX/1.0");
+            org.springframework.http.HttpEntity<String> entity = new org.springframework.http.HttpEntity<>("parameters",
+                    headers);
+
+            org.springframework.http.ResponseEntity<Map> response = rest.exchange(url,
+                    org.springframework.http.HttpMethod.GET, entity, Map.class);
+
+            if (response.getBody() == null)
+                return gps;
+
+            Object display = response.getBody().get("display_name");
+            if (display == null)
+                return gps;
+
+            // Simplify the address to just City, State or similar if possible, but full
+            // address is fine
+            String fullAddress = display.toString();
+            String[] tokens = fullAddress.split(",");
+            if (tokens.length >= 2) {
+                // Try to return something lie "City, State"
+                return tokens[0].trim() + ", " + tokens[1].trim();
+            }
+            return fullAddress;
         } catch (Exception e) {
+            System.err.println("Error resolving GPS: " + e.getMessage());
             return gps;
         }
+    }
+
+    public List<Map<String, Object>> getMarketplaceProducts() {
+        return productRepository.findAll().stream().map(product -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", product.getId());
+            map.put("cropName", product.getCropName());
+            map.put("price", product.getPrice());
+            map.put("imagePath", product.getImagePath());
+            map.put("harvestDate", product.getHarvestDate());
+            map.put("gpsLocation", product.getGpsLocation());
+            map.put("qualityGrade", product.getQualityGrade());
+            map.put("confidenceScore", product.getConfidenceScore());
+            map.put("farmerName", product.getFarmer() != null ? product.getFarmer().getName() : "Unknown Farmer");
+
+            // OPTIMIZATION: Use cached address if available, otherwise fallback to GPS
+            // (don't call API here!)
+            if (product.getAddress() != null && !product.getAddress().isBlank()) {
+                map.put("displayLocation", product.getAddress());
+            } else {
+                map.put("displayLocation", product.getGpsLocation());
+            }
+
+            return map;
+        }).collect(Collectors.toList());
     }
 }

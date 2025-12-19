@@ -5,7 +5,7 @@
     <button class="px-4 py-2 bg-indigo-600 text-white rounded">Create PO</button>
   </div>
 
-  <div class="overflow-x-auto">
+  <div *ngIf="orders.length > 0; else emptyState" class="overflow-x-auto">
     <table class="w-full text-left table-auto">
       <thead class="text-xs text-slate-500 uppercase">
         <tr>
@@ -22,13 +22,13 @@
         <tr *ngFor="let o of orders" class="border-t hover:bg-slate-50">
           <td class="px-4 py-3">{{ o.id }}</td>
           <td class="px-4 py-3">{{ o.supplier }}</td>
-          <td class="px-4 py-3">{{ o.createdAt }}</td>
+          <td class="px-4 py-3">{{ o.createdAt | date:'mediumDate' }}</td>
           <td class="px-4 py-3">{{ o.items }}</td>
           <td class="px-4 py-3">₹ {{ o.total }}</td>
           <td class="px-4 py-3">
             <span class="px-3 py-1 rounded-full text-xs" [ngClass]="statusClass(o.status)">{{
               o.status
-            }}</span>
+              }}</span>
           </td>
           <td class="px-4 py-3">
             <button (click)="view(o)" class="px-3 py-1 bg-sky-100 text-sky-800 rounded">
@@ -39,4 +39,12 @@
       </tbody>
     </table>
   </div>
+  <ng-template #emptyState>
+    <div class="text-center py-10 text-gray-500">
+      <p>No purchase orders found.</p>
+      <button class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+        Create First PO
+      </button>
+    </div>
+  </ng-template>
 </div>

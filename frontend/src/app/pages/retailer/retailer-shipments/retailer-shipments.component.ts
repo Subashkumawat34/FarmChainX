@@ -1,6 +1,6 @@
-// src/app/pages/retailer/retailer-shipments/retailer-shipments.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 interface Shipment {
   id: string;
@@ -17,11 +17,20 @@ interface Shipment {
   templateUrl: './retailer-shipments.component.html',
 })
 export class RetailerShipmentsComponent {
-  shipments: Shipment[] = [
-    { id: 'SHIP-9001', carrier: 'RoadEx', eta: '2025-12-14', status: 'In Transit', items: 12 },
-    { id: 'SHIP-9002', carrier: 'AgriMove', eta: '2025-12-13', status: 'Picked', items: 4 },
-    { id: 'SHIP-9003', carrier: 'QuickLog', eta: '2025-12-11', status: 'Delivered', items: 8 },
-  ];
+  shipments: Shipment[] = [];
+
+  constructor(private http: HttpClient) {
+    this.fetchShipments();
+  }
+
+  fetchShipments() {
+    this.http.get<any[]>('/api/retailer/shipments').subscribe({
+      next: (data) => {
+        this.shipments = data;
+      },
+      error: (err) => console.error('Failed to load shipments', err)
+    });
+  }
 
   statusClass(s: string) {
     switch (s) {

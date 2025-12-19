@@ -13,10 +13,8 @@ import { AuthService } from '../../../services/auth.service';
 })
 export class ConsumerLayoutComponent {
   sidebarOpen = false;
-  currentView: string = 'dashboard';
-  unreadCount = 0;
 
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService) { }
 
   toggleSidebar(): void {
     this.sidebarOpen = !this.sidebarOpen;
@@ -25,9 +23,5 @@ export class ConsumerLayoutComponent {
   currentConsumerName(): string {
     const n = (this.auth?.getName && this.auth.getName()) || 'User';
     return n ? String(n).split(' ')[0] : 'User';
-  }
-
-  onRouteActivate(routePath: string) {
-    this.currentView = routePath || 'dashboard';
   }
 }

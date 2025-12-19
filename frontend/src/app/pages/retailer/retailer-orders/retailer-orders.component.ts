@@ -1,6 +1,6 @@
-// src/app/pages/retailer/retailer-orders/retailer-orders.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 interface Order {
   id: string;
@@ -18,32 +18,27 @@ interface Order {
   templateUrl: './retailer-orders.component.html',
 })
 export class RetailerOrdersComponent {
-  orders: Order[] = [
-    {
-      id: 'PO-20251209-001',
-      supplier: 'GreenFoods',
-      items: 10,
-      total: 4200,
-      createdAt: '2025-12-09',
-      status: 'Processing',
-    },
-    {
-      id: 'PO-20251207-002',
-      supplier: 'RiverHarvest',
-      items: 4,
-      total: 1600,
-      createdAt: '2025-12-07',
-      status: 'Shipped',
-    },
-    {
-      id: 'PO-20251205-003',
-      supplier: 'SikarFarm',
-      items: 6,
-      total: 2500,
-      createdAt: '2025-12-05',
-      status: 'Delivered',
-    },
-  ];
+  orders: Order[] = [];
+
+  constructor(private http: HttpClient) {
+    this.fetchOrders();
+  }
+
+  fetchOrders() {
+    this.http.get<any[]>('/api/retailer/orders/all').subscribe({
+      next: (data) => {
+        this.orders = data.map(o => ({
+          id: 'PO-' + o.id,
+          supplier: 'Supplier ' + o.supplierId,
+          items: o.items,
+          total: o.totalAmount,
+          createdAt: o.createdAt,
+          status: o.status
+        }));
+      },
+      error: (err) => console.error('Failed to load orders', err)
+    });
+  }
 
   statusClass(s: string) {
     switch (s) {

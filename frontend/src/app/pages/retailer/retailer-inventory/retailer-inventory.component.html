@@ -8,7 +8,7 @@
     </div>
   </div>
 
-  <div class="overflow-x-auto">
+  <div *ngIf="items.length > 0; else emptyState" class="overflow-x-auto">
     <table class="w-full text-left table-auto">
       <thead class="text-xs text-slate-500 uppercase">
         <tr>
@@ -28,11 +28,8 @@
           <td class="px-4 py-3">{{ it.batchId }}</td>
           <td class="px-4 py-3">
             {{ it.qtyOnHand }} {{ it.unit }}
-            <span
-              *ngIf="it.qtyOnHand < lowThreshold"
-              class="ml-2 text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded"
-              >Low</span
-            >
+            <span *ngIf="it.qtyOnHand < lowThreshold"
+              class="ml-2 text-xs px-2 py-1 bg-rose-100 text-rose-700 rounded">Low</span>
           </td>
           <td class="px-4 py-3">₹ {{ it.costPrice }}</td>
           <td class="px-4 py-3">₹ {{ it.sellPrice }}</td>
@@ -50,4 +47,9 @@
       </tbody>
     </table>
   </div>
+  <ng-template #emptyState>
+    <div class="text-center py-10 text-gray-500">
+      <p>No inventory items found.</p>
+    </div>
+  </ng-template>
 </div>

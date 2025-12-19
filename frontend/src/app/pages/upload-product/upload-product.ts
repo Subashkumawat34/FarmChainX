@@ -16,6 +16,7 @@ export class UploadProduct {
   pesticides = '';
   harvestDate = '';             // yyyy-MM-dd
   gpsLocation = '';
+  price: number | null = null;
   imageFile: File | null = null;
   previewUrl: string | ArrayBuffer | null = null;
 
@@ -88,6 +89,7 @@ export class UploadProduct {
     // ensure backend-friendly date format yyyy-MM-dd (input already gives it)
     formData.append('harvestDate', this.harvestDate);
     formData.append('gpsLocation', this.gpsLocation.trim());
+    formData.append('price', this.price ? String(this.price) : '0');
     formData.append('image', this.imageFile);
 
     this.http.post<any>('/api/products/upload', formData)

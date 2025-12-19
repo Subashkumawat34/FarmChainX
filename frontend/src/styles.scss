@@ -23,11 +23,7 @@ app-root {
   min-height: 100dvh;
 }
 
-app-root button {
-  all: unset;
-  display: inline-block;
-  cursor: pointer;
-}
+
 
 @keyframes blob {
   0%, 100% { transform: translate(0px, 0px) scale(1); }

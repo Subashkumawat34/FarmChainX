@@ -97,6 +97,13 @@ export const routes: Routes = [
             (m) => m.ConsumerNotificationsComponent
           ),
       },
+      {
+        path: 'marketplace',
+        loadComponent: () =>
+          import('./pages/consumer/consumer-marketplace/consumer-marketplace.component').then(
+            (m) => m.ConsumerMarketplaceComponent
+          ),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

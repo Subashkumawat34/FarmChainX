@@ -1,6 +1,6 @@
-// src/app/pages/retailer/retailer-inventory/retailer-inventory.component.ts
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
 interface InventoryItem {
   productId: string;
@@ -22,42 +22,20 @@ interface InventoryItem {
 })
 export class RetailerInventoryComponent {
   lowThreshold = 20;
+  items: InventoryItem[] = [];
 
-  items: InventoryItem[] = [
-    {
-      productId: 'p1',
-      name: 'Organic Tomatoes',
-      batchId: 'BATCH-TOM-001',
-      qtyOnHand: 120,
-      unit: 'kg',
-      costPrice: 40,
-      sellPrice: 60,
-      expiryDate: '2026-01-05',
-      supplier: 'GreenFoods',
-    },
-    {
-      productId: 'p2',
-      name: 'Potatoes',
-      batchId: 'BATCH-POT-002',
-      qtyOnHand: 18,
-      unit: 'kg',
-      costPrice: 20,
-      sellPrice: 30,
-      expiryDate: '2026-03-01',
-      supplier: 'FarmCo',
-    },
-    {
-      productId: 'p3',
-      name: 'Spinach',
-      batchId: 'BATCH-SP-003',
-      qtyOnHand: 8,
-      unit: 'kg',
-      costPrice: 30,
-      sellPrice: 45,
-      expiryDate: '2025-12-20',
-      supplier: 'Leafy Ltd',
-    },
-  ];
+  constructor(private http: HttpClient) {
+    this.fetchInventory();
+  }
+
+  fetchInventory() {
+    this.http.get<any[]>('/api/retailer/inventory').subscribe({
+      next: (data) => {
+        this.items = data;
+      },
+      error: (err) => console.error('Failed to load inventory', err)
+    });
+  }
 
   receive(item: InventoryItem) {
     // placeholder: open receive dialog / mark as received

@@ -16,21 +16,41 @@ import java.util.Optional;
 
 public interface SupplyChainLogRepository extends JpaRepository<SupplyChainLog, Long> {
 
-    List<SupplyChainLog> findByProductIdOrderByTimestampAsc(Long productId);
+  List<SupplyChainLog> findByProductIdOrderByTimestampAsc(Long productId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    Optional<SupplyChainLog> findTopByProductIdOrderByTimestampDesc(Long productId);
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  Optional<SupplyChainLog> findTopByProductIdOrderByTimestampDesc(Long productId);
 
-    @Query("""
-        SELECT log FROM SupplyChainLog log
-        WHERE log.toUserId = :retailerId
-          AND log.confirmed = false
-          AND log.rejected = false
-          AND log.id = (
-                SELECT MAX(l2.id)
-                FROM SupplyChainLog l2
-                WHERE l2.productId = log.productId
-          )
-        """)
-    Page<SupplyChainLog> findPendingForRetailer(@Param("retailerId") Long retailerId, Pageable pageable);
+  @Query("""
+      SELECT log FROM SupplyChainLog log
+      WHERE log.toUserId = :retailerId
+        AND log.confirmed = false
+        AND log.rejected = false
+        AND log.id = (
+              SELECT MAX(l2.id)
+              FROM SupplyChainLog l2
+              WHERE l2.productId = log.productId
+        )
+      """)
+  Page<SupplyChainLog> findPendingForRetailer(@Param("retailerId") Long retailerId, Pageable pageable);
+
+  @Query("""
+      SELECT COUNT(log) FROM SupplyChainLog log
+      WHERE log.toUserId = :retailerId
+        AND log.confirmed = false
+        AND log.rejected = false
+        AND log.id = (
+              SELECT MAX(l2.id)
+              FROM SupplyChainLog l2
+              WHERE l2.productId = log.productId
+        )
+      """)
+  long countPendingForRetailer(@Param("retailerId") Long retailerId);
+
+  @Query("SELECT COUNT(l) FROM SupplyChainLog l WHERE l.toUserId = :userId AND l.confirmed = true")
+  long countConfirmedByToUserId(@Param("userId") Long userId);
+
+  List<SupplyChainLog> findByToUserIdAndConfirmedTrue(Long toUserId);
+
+  List<SupplyChainLog> findByToUserIdOrderByTimestampDesc(Long toUserId);
 }

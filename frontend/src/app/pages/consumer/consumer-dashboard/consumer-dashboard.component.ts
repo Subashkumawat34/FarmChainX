@@ -1,23 +1,27 @@
-import { Component, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, AfterViewInit, ViewChild, ElementRef, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
+import { CartService } from '../../../services/cart.service';
+import { ProductService } from '../../../services/product.service';
+import { AuthService } from '../../../services/auth.service';
+import { CartSidebarComponent } from '../cart-sidebar/cart-sidebar.component';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-consumer-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, CartSidebarComponent],
   templateUrl: './consumer-dashboard.component.html',
 })
-export class ConsumerDashboardComponent implements AfterViewInit {
+export class ConsumerDashboardComponent implements AfterViewInit, OnInit {
   @ViewChild('spendChart') spendChartRef!: ElementRef;
 
   userProfile = {
-    name: 'Subhash Kumawat',
+    name: 'Consumer',
     memberSince: 'Jan 2024',
-    location: 'Rajasthan, India',
+    location: 'India',
     ecoPoints: 450
   };
 
@@ -25,7 +29,7 @@ export class ConsumerDashboardComponent implements AfterViewInit {
     totalScans: 24,
     verifiedProducts: 22,
     carbonOffset: '12kg',
-    localSupport: '₹8,500' // Amount spent on local farmers
+    localSupport: '₹8,500'
   };
 
   recentScans = [
@@ -34,10 +38,40 @@ export class ConsumerDashboardComponent implements AfterViewInit {
     { id: 'BATCH-99', product: 'Basmati Rice', date: '3 days ago', status: 'Suspicious', image: 'assets/rice.jpg' }
   ];
 
-  constructor() { }
+  products = signal<any[]>([]);
+  isCartOpen = signal(false);
+
+  constructor(
+    public cartService: CartService,
+    private productService: ProductService,
+    private authService: AuthService
+  ) {
+    this.userProfile.name = this.authService.getName() || 'Consumer';
+  }
+
+  ngOnInit() {
+    this.loadProducts();
+  }
 
   ngAfterViewInit() {
-    this.initSpendChart();
+    if (this.spendChartRef) {
+      this.initSpendChart();
+    }
+  }
+
+  loadProducts() {
+    // We still load products for dashboard summary if needed
+    this.productService.getMarketProducts().subscribe({
+      next: (data) => {
+        this.products.set(data.slice(0, 4)); // Show only 4 recent on dashboard
+      },
+      error: (err) => console.error('Failed to load products', err)
+    });
+  }
+
+  addToCart(product: any) {
+    this.cartService.addToCart(product);
+    this.isCartOpen.set(true);
   }
 
   initSpendChart() {
@@ -49,10 +83,10 @@ export class ConsumerDashboardComponent implements AfterViewInit {
         datasets: [{
           data: [40, 30, 20, 10],
           backgroundColor: [
-            '#10B981', // Emerald
-            '#F59E0B', // Amber
-            '#EF4444', // Red (Fruits)
-            '#3B82F6'  // Blue
+            '#10B981',
+            '#F59E0B',
+            '#EF4444',
+            '#3B82F6'
           ],
           borderWidth: 0
         }]

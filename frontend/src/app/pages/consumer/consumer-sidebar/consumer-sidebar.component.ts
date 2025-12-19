@@ -7,9 +7,6 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './consumer-sidebar.component.html',
-  // styleUrls: ['./consumer-sidebar.component.scss'] // optional
 })
 export class ConsumerSidebarComponent {
-  @Input() currentView: string | null = null;
-  @Input() unreadCount: number = 0;
 }

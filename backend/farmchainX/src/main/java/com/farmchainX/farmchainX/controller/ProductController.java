@@ -68,6 +68,7 @@ public class ProductController {
             @RequestParam String pesticides,
             @RequestParam String harvestDate,
             @RequestParam String gpsLocation,
+            @RequestParam(required = false, defaultValue = "0.0") Double price,
             @RequestParam("image") MultipartFile imageFile,
             Principal principal) throws IOException {
 
@@ -84,12 +85,11 @@ public class ProductController {
                     .orElseThrow(() -> new RuntimeException("Farmer not found"));
 
             com.cloudinary.Cloudinary cloudinary = new com.cloudinary.Cloudinary(
-                    "cloudinary://576328924368997:w91CTYnN6GDpASZhjff1oyeKIwk@dui3x1lur" //Please change the infos
+                    "cloudinary://576328924368997:w91CTYnN6GDpASZhjff1oyeKIwk@dui3x1lur" // Please change the infos
             );
             java.util.Map uploadResult = cloudinary.uploader().upload(
                     imageFile.getBytes(),
-                    com.cloudinary.utils.ObjectUtils.asMap("folder", "farmchainx/products")
-            );
+                    com.cloudinary.utils.ObjectUtils.asMap("folder", "farmchainx/products"));
             String imagePath = uploadResult.get("secure_url").toString();
 
             LocalDate parsedDate = null;
@@ -112,8 +112,14 @@ public class ProductController {
             product.setFarmer(farmer);
             product.setQualityGrade(null);
             product.setConfidenceScore(null);
+            product.setPrice(price);
 
             Product saved = productService.saveProduct(product);
+
+            // Resolve Address once on upload
+            String resolvedAddress = productService.resolveAddressFromGps(gpsLocation);
+            saved.setAddress(resolvedAddress);
+
             saved.ensurePublicUuid();
             productRepository.save(saved);
 
@@ -158,8 +164,7 @@ public class ProductController {
                 page,
                 size,
                 asc ? Sort.Direction.ASC : Sort.Direction.DESC,
-                sortProp
-        );
+                sortProp);
 
         var pageRes = productRepository.findByFarmerId(farmer.getId(), pageable);
         return ResponseEntity.ok(pageRes);
@@ -189,8 +194,7 @@ public class ProductController {
         return ResponseEntity.ok(Map.of(
                 "message", "QR Code generated successfully",
                 "qrPath", qrPath,
-                "verifyUrl", "https://yourdomain.com/verify/" + product.getPublicUuid()
-        ));
+                "verifyUrl", "https://yourdomain.com/verify/" + product.getPublicUuid()));
     }
 
     @GetMapping("/products/{id}/qrcode/download")
@@ -240,8 +244,8 @@ public class ProductController {
             if (principal != null) {
                 User user = userRepository.findByEmail(principal.getName()).orElse(null);
                 if (user != null) {
-                    canUpdate = user.getRoles().stream().anyMatch(role
-                            -> "ROLE_DISTRIBUTOR".equals(role.getName()) || "ROLE_RETAILER".equals(role.getName()));
+                    canUpdate = user.getRoles().stream().anyMatch(role -> "ROLE_DISTRIBUTOR".equals(role.getName())
+                            || "ROLE_RETAILER".equals(role.getName()));
                 }
             }
             data.put("canUpdate", canUpdate);
@@ -263,7 +267,8 @@ public class ProductController {
                         }
 
                         if (productId != null) {
-                            boolean already = feedbackRepository.findByProductIdAndConsumerId(productId, user.getId()).isPresent();
+                            boolean already = feedbackRepository.findByProductIdAndConsumerId(productId, user.getId())
+                                    .isPresent();
                             canGiveFeedback = !already;
                         }
                     }
@@ -325,7 +330,8 @@ public class ProductController {
                 return ResponseEntity.ok(Map.of("message", "You have successfully taken the product from the farmer"));
             }
 
-            if (lastLog.getToUserId() != null && lastLog.getToUserId().equals(currentUser.getId()) && toUserId == null) {
+            if (lastLog.getToUserId() != null && lastLog.getToUserId().equals(currentUser.getId())
+                    && toUserId == null) {
                 SupplyChainLog trackingLog = new SupplyChainLog();
                 trackingLog.setProductId(productId);
                 trackingLog.setFromUserId(currentUser.getId());
@@ -342,7 +348,8 @@ public class ProductController {
                 return ResponseEntity.ok(Map.of("message", "Tracking updated"));
             }
 
-            if (toUserId != null && lastLog.getToUserId() != null && lastLog.getToUserId().equals(currentUser.getId()) && lastLog.isConfirmed()) {
+            if (toUserId != null && lastLog.getToUserId() != null && lastLog.getToUserId().equals(currentUser.getId())
+                    && lastLog.isConfirmed()) {
                 if (!userRepository.existsById(toUserId)) {
                     return ResponseEntity.badRequest().body(Map.of("error", "Selected retailer does not exist"));
                 }
@@ -361,7 +368,8 @@ public class ProductController {
 
                 supplyChainLogRepository.save(handover);
 
-                return ResponseEntity.ok(Map.of("message", "Product successfully handed over! Only the selected retailer will see it in Pending Receipts."));
+                return ResponseEntity.ok(Map.of("message",
+                        "Product successfully handed over! Only the selected retailer will see it in Pending Receipts."));
             }
         }
 
@@ -390,5 +398,10 @@ public class ProductController {
         }
 
         return ResponseEntity.badRequest().body(Map.of("error", "Invalid action"));
+    }
+
+    @GetMapping("/products/market")
+    public List<Map<String, Object>> getMarketProducts() {
+        return productService.getMarketplaceProducts();
     }
 }
