@@ -1,42 +1,41 @@
-<!-- src/app/pages/retailer/retailer-shipments/retailer-shipments.component.html -->
 <div class="bg-white p-6 rounded-2xl shadow">
   <div class="flex justify-between items-center mb-4">
-    <h2 class="text-xl font-semibold">Shipments</h2>
-    <button class="px-4 py-2 bg-indigo-600 text-white rounded">Create Consignment</button>
+    <h2 class="text-xl font-semibold">Incoming Shipments</h2>
+    <span class="text-sm text-gray-500">Items pending your confirmation</span>
   </div>
 
-  <div *ngIf="shipments.length > 0; else emptyState" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div *ngFor="let s of shipments" class="p-4 border rounded-lg">
-      <div class="flex justify-between items-start">
-        <div>
-          <h3 class="font-semibold">{{ s.id }}</h3>
-          <p class="text-sm text-slate-500">{{ s.carrier }} — ETA: {{ s.eta | date:'mediumDate' }}</p>
-        </div>
-        <div class="text-right">
-          <p class="text-sm">Items: {{ s.items }}</p>
-          <p class="text-xs mt-1">
-            <span class="px-2 py-1 rounded-full text-xs" [ngClass]="statusClass(s.status)">{{
-              s.status
-              }}</span>
-          </p>
-        </div>
-      </div>
+  <div *ngIf="loading" class="text-center py-4 text-gray-400">Loading...</div>
 
-      <div class="mt-4">
-        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-          <div class="h-2 rounded-full bg-emerald-500" [style.width.%]="progress(s.status)"></div>
-        </div>
-        <div class="flex justify-between text-xs text-slate-500 mt-2">
-          <span>Picked</span>
-          <span>In transit</span>
-          <span>Delivered</span>
-        </div>
-      </div>
-    </div>
+  <div *ngIf="!loading && shipments.length > 0; else emptyState" class="border rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product ID</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">From Distributor
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr *ngFor="let s of shipments">
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">#{{s.productId}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{s.createdBy}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{s.timestamp | date:'medium'}}</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+            <button (click)="confirmReceipt(s)"
+              class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 px-3 py-1 rounded border border-emerald-200">
+              Confirm Receipt
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+
   <ng-template #emptyState>
-    <div class="text-center py-10 text-gray-500">
-      <p>No active shipments found.</p>
+    <div class="text-center py-10 text-gray-500" *ngIf="!loading">
+      <p>No pending shipments found.</p>
     </div>
   </ng-template>
 </div>

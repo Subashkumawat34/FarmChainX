@@ -84,7 +84,7 @@ export class ConsumerMarketplaceComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        this.productService.getMarketProducts().subscribe({
+        this.productService.getConsumerMarketProducts().subscribe({
             next: (data) => this.products.set(data),
             error: (err) => console.error('Market load error', err)
         });

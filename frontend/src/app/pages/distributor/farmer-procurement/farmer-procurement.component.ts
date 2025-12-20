@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-farmer-procurement',
@@ -13,7 +14,7 @@ export class FarmerProcurementComponent implements OnInit {
   loading = true;
   buyingId: number | null = null;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private productService: ProductService) { }
 
   ngOnInit(): void {
     this.loadMarketplace();
@@ -21,12 +22,9 @@ export class FarmerProcurementComponent implements OnInit {
 
   loadMarketplace() {
     this.loading = true;
-    // FETCH ALL PRODUCTS (In real app, filter by status='AVAILABLE')
-    this.http.get<any>('/api/products/my?page=0&size=20').subscribe({
+    this.productService.getMarketProducts().subscribe({
       next: (res) => {
-        // Mock filter: Only show items that are NOT sold
-        // Since backend might not have 'sold' flag yet, we treat all as available for demo
-        this.availableCrops = res.content || [];
+        this.availableCrops = res || [];
         this.loading = false;
       },
       error: (err) => {
@@ -40,19 +38,26 @@ export class FarmerProcurementComponent implements OnInit {
     if (confirm(`Confirm purchase of ${crop.cropName} for ₹${this.estimatePrice(crop)}?`)) {
       this.buyingId = crop.id;
 
-      // Simulate API call to buy
-      setTimeout(() => {
-        alert(`✅ Automatically transferred Ownership of Batch #${crop.id} to your inventory.\n\nBlockchain Transaction: 0x7f2...9a1`);
-
-        // Remove from list locally to simulate "Sold"
-        this.availableCrops = this.availableCrops.filter(c => c.id !== crop.id);
-        this.buyingId = null;
-      }, 1500);
+      const location = "Distributor Warehouse (Initial)";
+      this.productService.pickupProduct(crop.id, location).subscribe({
+        next: (res) => {
+          alert(`✅ Successfully Acquired! \nOwnership of Batch #${crop.id} transferred to you.`);
+          // Refresh list to remove the item
+          this.loadMarketplace();
+          this.buyingId = null;
+        },
+        error: (err) => {
+          console.error(err);
+          alert("Failed to acquire product: " + (err.error?.error || err.message));
+          this.buyingId = null;
+        }
+      });
     }
   }
 
   estimatePrice(crop: any): number {
-    // Mock price calc based on quality
+    if (crop.price && crop.price > 0) return crop.price;
+    // Mock price calc based on quality (fallback)
     let base = 2000;
     if (crop.qualityGrade?.includes('A')) base *= 1.5;
     if (crop.qualityGrade?.includes('B')) base *= 1.2;

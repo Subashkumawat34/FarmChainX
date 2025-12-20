@@ -29,7 +29,7 @@ export class RetailerInventoryComponent {
   }
 
   fetchInventory() {
-    this.http.get<any[]>('/api/retailer/inventory').subscribe({
+    this.http.get<any[]>('/api/track/retailer/inventory').subscribe({
       next: (data) => {
         this.items = data;
       },

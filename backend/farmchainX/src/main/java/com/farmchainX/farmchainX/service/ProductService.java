@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.farmchainX.farmchainX.model.Product;
 import com.farmchainX.farmchainX.model.SupplyChainLog;
+import com.farmchainX.farmchainX.model.User;
 import com.farmchainX.farmchainX.repository.ProductRepository;
 import com.farmchainX.farmchainX.repository.SupplyChainLogRepository;
 import com.farmchainX.farmchainX.repository.UserRepository;
@@ -287,27 +288,70 @@ public class ProductService {
     }
 
     public List<Map<String, Object>> getMarketplaceProducts() {
-        return productRepository.findAll().stream().map(product -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", product.getId());
-            map.put("cropName", product.getCropName());
-            map.put("price", product.getPrice());
-            map.put("imagePath", product.getImagePath());
-            map.put("harvestDate", product.getHarvestDate());
-            map.put("gpsLocation", product.getGpsLocation());
-            map.put("qualityGrade", product.getQualityGrade());
-            map.put("confidenceScore", product.getConfidenceScore());
-            map.put("farmerName", product.getFarmer() != null ? product.getFarmer().getName() : "Unknown Farmer");
+        return productRepository.findAll().stream()
+                .map(product -> {
+                    boolean isSold = supplyChainLogRepository.existsByProductId(product.getId());
 
-            // OPTIMIZATION: Use cached address if available, otherwise fallback to GPS
-            // (don't call API here!)
-            if (product.getAddress() != null && !product.getAddress().isBlank()) {
-                map.put("displayLocation", product.getAddress());
-            } else {
-                map.put("displayLocation", product.getGpsLocation());
-            }
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", product.getId());
+                    map.put("cropName", product.getCropName());
+                    map.put("price", product.getPrice());
+                    map.put("imagePath", product.getImagePath());
+                    map.put("harvestDate", product.getHarvestDate());
+                    map.put("gpsLocation", product.getGpsLocation());
+                    map.put("qualityGrade", product.getQualityGrade());
+                    map.put("confidenceScore", product.getConfidenceScore());
+                    map.put("farmerName",
+                            product.getFarmer() != null ? product.getFarmer().getName() : "Unknown Farmer");
 
-            return map;
-        }).collect(Collectors.toList());
+                    if (product.getAddress() != null && !product.getAddress().isBlank()) {
+                        map.put("displayLocation", product.getAddress());
+                    } else {
+                        map.put("displayLocation", product.getGpsLocation());
+                    }
+
+                    map.put("isSold", isSold);
+                    map.put("status", isSold ? "Sold" : "Available");
+
+                    return map;
+                }).collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getConsumerProducts() {
+        // Fetch products that are currently with a Retailer (Confirmed)
+        // Logic: specific logs where toUser has role RETAILER and is confirmed,
+        // and no newer logs exist for that product.
+
+        // Simplified: Iterate all products, check status.
+        return productRepository.findAll().stream()
+                .map(product -> {
+                    SupplyChainLog lastLog = supplyChainLogRepository
+                            .findTopByProductIdOrderByTimestampDesc(product.getId()).orElse(null);
+
+                    if (lastLog != null && lastLog.isConfirmed() && lastLog.getToUserId() != null) {
+                        User owner = userRepository.findById(lastLog.getToUserId()).orElse(null);
+                        if (owner != null
+                                && owner.getRoles().stream().anyMatch(r -> "ROLE_RETAILER".equals(r.getName()))) {
+                            // It is with a retailer!
+                            Map<String, Object> map = new HashMap<>();
+                            map.put("id", product.getId());
+                            map.put("cropName", product.getCropName());
+                            // Retailer markup? For now use base price or mock markup
+                            map.put("price", product.getPrice() != null ? product.getPrice() * 1.5 : 100);
+                            map.put("imagePath", product.getImagePath());
+                            map.put("harvestDate", product.getHarvestDate());
+                            map.put("gpsLocation", product.getGpsLocation());
+                            map.put("displayLocation", lastLog.getLocation()); // Retailer location
+                            map.put("qualityGrade", product.getQualityGrade());
+                            map.put("farmerName",
+                                    product.getFarmer() != null ? product.getFarmer().getName() : "Unknown");
+                            map.put("retailerName", owner.getName());
+                            return map;
+                        }
+                    }
+                    return null;
+                })
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

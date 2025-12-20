@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 // Import map for the retry logic fix
 import { catchError, delay, retryWhen, scan, throwError, map } from 'rxjs';
-import { DatePipe, TitleCasePipe, DecimalPipe } from '@angular/common';
+import { TitleCasePipe, DecimalPipe } from '@angular/common';
 
 // Define the type for the scan accumulator to make the logic clear
 interface RetryState {
@@ -15,7 +15,7 @@ interface RetryState {
 
 @Component({
   standalone: true,
-  imports: [CommonModule, DatePipe, TitleCasePipe, DecimalPipe],
+  imports: [CommonModule, TitleCasePipe, DecimalPipe],
   templateUrl: './my-products.html',
 })
 export class MyProducts {

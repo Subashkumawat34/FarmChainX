@@ -18,8 +18,13 @@ public interface SupplyChainLogRepository extends JpaRepository<SupplyChainLog, 
 
   List<SupplyChainLog> findByProductIdOrderByTimestampAsc(Long productId);
 
+  boolean existsByProductId(Long productId);
+
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   Optional<SupplyChainLog> findTopByProductIdOrderByTimestampDesc(Long productId);
+
+  // Non-locking version for read-only checks
+  Optional<SupplyChainLog> findFirstByProductIdOrderByTimestampDesc(Long productId);
 
   @Query("""
       SELECT log FROM SupplyChainLog log
@@ -53,4 +58,20 @@ public interface SupplyChainLogRepository extends JpaRepository<SupplyChainLog, 
   List<SupplyChainLog> findByToUserIdAndConfirmedTrue(Long toUserId);
 
   List<SupplyChainLog> findByToUserIdOrderByTimestampDesc(Long toUserId);
+
+  @Query("""
+      SELECT COUNT(l) FROM SupplyChainLog l
+      WHERE l.fromUserId = :distributorId
+        AND l.toUserId IS NOT NULL
+        AND l.toUserId != :distributorId
+        AND l.confirmed = false
+        AND l.id = (
+            SELECT MAX(l2.id)
+            FROM SupplyChainLog l2
+            WHERE l2.productId = l.productId
+        )
+      """)
+  long countPendingHandover(@Param("distributorId") Long distributorId);
+
+  List<SupplyChainLog> findByFromUserId(Long fromUserId);
 }

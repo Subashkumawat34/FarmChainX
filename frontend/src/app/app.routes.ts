@@ -195,60 +195,6 @@ export const routes: Routes = [
             (m) => m.InventoryComponent
           ),
       },
-
-      // Logistics
-      {
-        path: 'logistics',
-        loadComponent: () =>
-          import('./pages/distributor/logistics/logistics.component').then(
-            (m) => m.LogisticsComponent
-          ),
-      },
-
-      // Retailer Orders
-      {
-        path: 'retailer-orders',
-        loadComponent: () =>
-          import('./pages/distributor/retailer-orders/retailer-orders.component').then(
-            (m) => m.RetailerOrdersComponent
-          ),
-      },
-
-      // Order Detail
-      {
-        path: 'order-detail',
-        loadComponent: () =>
-          import('./pages/distributor/order-detail/order-detail.component').then(
-            (m) => m.OrderDetailComponent
-          ),
-      },
-
-      // Quality Grading
-      {
-        path: 'quality-grading',
-        loadComponent: () =>
-          import('./pages/distributor/quality-grading/quality-grading.component').then(
-            (m) => m.QualityGradingComponent
-          ),
-      },
-
-      // Trace Management
-      {
-        path: 'trace-management',
-        loadComponent: () =>
-          import('./pages/distributor/trace-management/trace-management.component').then(
-            (m) => m.TraceManagementComponent
-          ),
-      },
-
-      // Payments
-      {
-        path: 'payments',
-        loadComponent: () =>
-          import('./pages/distributor/payments/payments.component').then(
-            (m) => m.PaymentsComponent
-          ),
-      },
     ],
   },
 

@@ -19,7 +19,7 @@ export class Login {
     private http: HttpClient,
     private router: Router,
     private auth: AuthService   // ✔ Inject AuthService
-  ) {}
+  ) { }
 
   login() {
     this.http.post<any>('/api/auth/login', {

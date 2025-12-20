@@ -54,22 +54,23 @@ export class RetailerDashboardComponent implements AfterViewInit {
 
   fetchDashboardData() {
     // 1. Fetch Stats
-    this.http.get<any>('/api/retailer/dashboard-stats').subscribe({
+    this.http.get<any>('/api/track/retailer/dashboard-stats').subscribe({
       next: (data) => {
         this.stats = data;
       },
       error: (err) => console.error('Failed to load stats', err)
     });
 
-    // 2. Fetch Recent Orders
-    this.http.get<any[]>('/api/retailer/orders').subscribe({
-      next: (orders) => {
-        this.recentOrders = orders.map(o => ({
-          id: o.id,
-          supplier: 'Supplier ' + o.supplierId, // Mock name as we only have ID
-          items: o.items,
-          total: o.totalAmount,
-          status: o.status
+    // 2. Fetch Recent Orders (Pending Shipments essentially)
+    this.http.get<any>('/api/track/pending?size=5').subscribe({
+      next: (page) => {
+        const orders = page.content || [];
+        this.recentOrders = orders.map((o: any) => ({
+          id: o.productId,
+          supplier: 'Distributor', // 'Distributor ' + o.fromUserId
+          items: 'Batch #' + o.productId,
+          total: 0, // No price in log, need product lookup or ignore
+          status: 'Pending'
         }));
       },
       error: (err) => console.error('Failed to load orders', err)

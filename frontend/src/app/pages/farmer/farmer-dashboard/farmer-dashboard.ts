@@ -20,27 +20,28 @@ export class FarmerDashboard implements OnInit {
   recentUploads: any[] = [];
   loading = true;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.loadDashboardData();
   }
 
   loadDashboardData() {
-    // In a real app, this would be a dedicated dashboard endpoint.
-    // We will simulate it by fetching my products.
-    this.http.get<any>('/api/products/my?page=0&size=5&sort=id,desc').subscribe({
+    // Fetch a larger set to approximate stats better (or use a real stats endpoint)
+    this.http.get<any>('/api/products/my?page=0&size=100&sort=id,desc').subscribe({
       next: (res) => {
-        const products = res.content || [];
-        this.recentUploads = products;
-        
+        const allProducts = res.content || [];
+        this.recentUploads = allProducts.slice(0, 5); // Show top 5
+
         // Calculate basic stats
-        this.stats.totalProducts = res.totalElements || products.length;
-        this.stats.activeBatches = products.filter((p: any) => !p.sold).length;
-        
-        // Mock sales data for now
-        this.stats.totalSales = Math.floor(this.stats.totalProducts * 0.4 * 1000); // Dummy calc
-        
+        this.stats.totalProducts = res.totalElements || allProducts.length;
+        this.stats.activeBatches = allProducts.filter((p: any) => !p.sold).length;
+
+        // Calculate Total Sales based on Sold items
+        this.stats.totalSales = allProducts
+          .filter((p: any) => p.sold)
+          .reduce((sum: number, p: any) => sum + (p.price || 0), 0);
+
         this.loading = false;
       },
       error: (err) => {

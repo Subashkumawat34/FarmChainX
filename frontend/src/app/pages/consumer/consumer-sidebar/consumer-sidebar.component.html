@@ -1,31 +1,29 @@
-<aside class="w-80 h-full bg-slate-50 border-r border-slate-200 flex flex-col">
-  <div class="p-6 border-b border-slate-200 flex items-center gap-4">
-    <!-- Attractive logo: gradient circle + leaf SVG -->
+<aside class="w-80 h-full bg-slate-900 border-r border-white/10 flex flex-col text-white">
+  <div class="p-6 border-b border-white/10 flex items-center gap-4">
+    <!-- Logo -->
     <div
-      class="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-emerald-400 to-indigo-600 shadow-lg">
+      class="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
       <svg viewBox="0 0 24 24" class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5"
         stroke-linecap="round" stroke-linejoin="round">
-        <path d="M3 21c6-4 6-10 9-15 3 5 3 11 9 15" />
-        <path d="M12 3c2.5 2.5 2.5 5.5 4 7.5" />
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
       </svg>
     </div>
 
     <div>
-      <div class="text-lg md:text-xl font-extrabold text-slate-900 leading-tight">
-        FarmChainX <span class="text-indigo-600">Consumer</span>
+      <div class="text-xl font-extrabold leading-tight">
+        FarmChainX <span class="text-indigo-400">Consumer</span>
       </div>
-      <div class="text-xs md:text-sm text-slate-500 mt-1">Sustainable Choices</div>
+      <div class="text-sm text-slate-400 mt-1">Sustainable Choices</div>
     </div>
   </div>
 
   <div class="px-4 py-6 flex-1 overflow-y-auto">
     <nav class="space-y-2">
       <!-- Dashboard -->
-      <a routerLink="/consumer/dashboard" routerLinkActive="bg-blue-600 text-white"
+      <a routerLink="/consumer/dashboard" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
         [routerLinkActiveOptions]="{ exact: true }"
-        class="flex items-center gap-3 px-3 py-3 rounded-lg transition text-base md:text-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 group">
-        <svg class="w-5 h-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
+        class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white font-medium group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
         </svg>
@@ -33,21 +31,19 @@
       </a>
 
       <!-- View Cart / Marketplace -->
-      <a routerLink="/consumer/marketplace" routerLinkActive="bg-blue-600 text-white"
-        class="flex items-center gap-3 px-3 py-3 rounded-lg transition text-base md:text-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 group">
-        <svg class="w-5 h-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
+      <a routerLink="/consumer/marketplace" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white font-medium group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
         </svg>
-        <span>View Cart</span>
+        <span>Marketplace</span>
       </a>
 
       <!-- Verify Product -->
-      <a routerLink="/consumer/verify" routerLinkActive="bg-blue-600 text-white"
-        class="flex items-center gap-3 px-3 py-3 rounded-lg transition text-base md:text-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 group">
-        <svg class="w-5 h-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
+      <a routerLink="/consumer/verify" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white font-medium group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           <path d="M9 12l2 2 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
@@ -55,26 +51,35 @@
       </a>
 
       <!-- Product History -->
-      <a routerLink="/consumer/history" routerLinkActive="bg-blue-600 text-white"
-        class="flex items-center gap-3 px-3 py-3 rounded-lg transition text-base md:text-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 group">
-        <svg class="w-5 h-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
+      <a routerLink="/consumer/history" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white font-medium group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span>Product History</span>
+        <span>Provenance History</span>
       </a>
 
       <!-- Notifications -->
-      <a routerLink="/consumer/notifications" routerLinkActive="bg-blue-600 text-white"
-        class="flex items-center gap-3 px-3 py-3 rounded-lg transition text-base md:text-lg font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 group">
-        <svg class="w-5 h-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor"
-          viewBox="0 0 24 24">
+      <a routerLink="/consumer/notifications" routerLinkActive="bg-indigo-600 text-white shadow-lg shadow-indigo-500/20"
+        class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-slate-300 hover:bg-white/5 hover:text-white font-medium group">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a2 2 0 10-4 0v1.083A6 6 0 004 11v3.159c0 .538-.214 1.055-.595 1.436L2 17h5" />
         </svg>
         <span>Notifications</span>
       </a>
     </nav>
+  </div>
+
+  <div class="p-4 border-t border-white/10">
+    <a routerLink="/dashboard"
+      class="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-400 hover:text-white hover:bg-white/5 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+      Exit Dashboard
+    </a>
   </div>
 </aside>

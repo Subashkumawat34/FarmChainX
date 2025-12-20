@@ -39,9 +39,7 @@
               <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Item Details</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Quality</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                Stock Level</th>
+                Status</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Location</th>
               <th scope="col" class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -55,45 +53,39 @@
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div
-                    class="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-lg flex items-center justify-center text-lg">
-                    📦
+                    class="flex-shrink-0 h-10 w-10 bg-emerald-100 rounded-lg overflow-hidden flex items-center justify-center">
+                    <img *ngIf="item.imagePath" [src]="item.imagePath" class="w-full h-full object-cover">
+                    <span *ngIf="!item.imagePath">📦</span>
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-bold text-gray-900">{{ item.cropName }}</div>
-                    <div class="text-xs text-gray-500">SKU: #{{ item.id }}</div>
+                    <div class="text-xs text-gray-500">ID: #{{ item.productId }}</div>
                   </div>
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                  [ngClass]="getGradeColor(item.qualityGrade)">
-                  Grade {{ item.qualityGrade }}
+                <span
+                  class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  In Stock
                 </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-900 font-medium">{{ item.quantity | number }} {{ item.unit }}</div>
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full mt-1"
-                  [ngClass]="getStatusColor(item.status)">
-                  {{ item.status }}
-                </span>
+                <span class="ml-2 text-xs text-gray-500">{{ item.timestamp | date:'short' }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                <div class="flex items-center gap-1">
-                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {{ item.warehouse }}
-                </div>
+                {{ item.location }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-emerald-600">
                 ₹{{ item.value | number }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button
-                  class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 px-3 py-1 rounded-md transition-colors">Dispatch</button>
+                <button (click)="openDispatch(item)"
+                  class="text-emerald-600 hover:text-emerald-900 bg-emerald-50 px-3 py-1 rounded-md transition-colors border border-emerald-200">
+                  Dispatch ->
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="inventoryItems.length === 0">
+              <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                No items in inventory. Go to Procurement to buy crops.
               </td>
             </tr>
           </tbody>
@@ -101,17 +93,67 @@
       </div>
     </div>
 
+    <!-- DISPATCH MODAL -->
+    <div *ngIf="showDispatchModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
+      role="dialog" aria-modal="true">
+      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closeModal()"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div
+          class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+          <div>
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100">
+              <svg class="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Dispatch Stock</h3>
+              <div class="mt-2 text-sm text-gray-500">
+                <p>Select a retailer to handover <b>{{selectedItem?.cropName}}</b>.</p>
+              </div>
+
+              <div class="mt-4 text-left">
+                <label class="block text-sm font-medium text-gray-700">Select Retailer</label>
+                <select [(ngModel)]="selectedRetailerId"
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm">
+                  <option [ngValue]="null" disabled>-- Choose Retailer --</option>
+                  <option *ngFor="let r of retailers" [ngValue]="r.id">{{r.name}} ({{r.email}})</option>
+                </select>
+              </div>
+
+              <div class="mt-4 text-left">
+                <label class="block text-sm font-medium text-gray-700">Current Location / Notes</label>
+                <input type="text" [(ngModel)]="dispatchLocation"
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm">
+              </div>
+
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+            <button type="button" (click)="confirmDispatch()" [disabled]="!selectedRetailerId"
+              class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none sm:col-start-2 sm:text-sm disabled:opacity-50">
+              Confirm Dispatch
+            </button>
+            <button type="button" (click)="closeModal()"
+              class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:col-start-1 sm:text-sm">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div> <!-- Analytics Summary (Mini) -->
     <!-- Analytics Summary (Mini) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-      <div class="bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl p-6 text-white shadow-lg">
-        <h4 class="font-semibold text-blue-100">Storage Optimization</h4>
+      <div class="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-6 text-white shadow-lg">
+        <h4 class="font-semibold text-emerald-100">Storage Optimization</h4>
         <p class="text-2xl font-bold mt-2">87%</p>
-        <p class="text-xs text-blue-200 mt-1">Warehouse capacity utilized</p>
+        <p class="text-xs text-emerald-200 mt-1">Warehouse capacity utilized</p>
       </div>
-      <div class="bg-gradient-to-br from-purple-500 to-fuchsia-600 rounded-xl p-6 text-white shadow-lg">
-        <h4 class="font-semibold text-purple-100">Turnover Rate</h4>
+      <div class="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl p-6 text-white shadow-lg">
+        <h4 class="font-semibold text-teal-100">Turnover Rate</h4>
         <p class="text-2xl font-bold mt-2">12 Days</p>
-        <p class="text-xs text-purple-200 mt-1">Avg time to dispatch</p>
+        <p class="text-xs text-teal-200 mt-1">Avg time to dispatch</p>
       </div>
       <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <h4 class="font-semibold text-gray-500 uppercase text-xs">Low Stock Alerts</h4>

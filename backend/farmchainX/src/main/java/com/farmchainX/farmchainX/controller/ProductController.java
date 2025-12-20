@@ -166,8 +166,33 @@ public class ProductController {
                 asc ? Sort.Direction.ASC : Sort.Direction.DESC,
                 sortProp);
 
-        var pageRes = productRepository.findByFarmerId(farmer.getId(), pageable);
-        return ResponseEntity.ok(pageRes);
+        org.springframework.data.domain.Page<Product> pageRes = productRepository.findByFarmerId(farmer.getId(),
+                pageable);
+
+        // Map to include status
+        org.springframework.data.domain.Page<Map<String, Object>> dtoPage = pageRes.map(p -> {
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", p.getId());
+            map.put("cropName", p.getCropName());
+            map.put("soilType", p.getSoilType());
+            map.put("pesticides", p.getPesticides());
+            map.put("harvestDate", p.getHarvestDate());
+            map.put("gpsLocation", p.getGpsLocation());
+            map.put("imagePath", p.getImagePath());
+            map.put("qualityGrade", p.getQualityGrade());
+            map.put("confidenceScore", p.getConfidenceScore());
+            map.put("price", p.getPrice());
+            map.put("address", p.getAddress());
+            map.put("publicUuid", p.getPublicUuid());
+            map.put("qrCodePath", p.getQrCodePath());
+
+            boolean isSold = supplyChainLogRepository.existsByProductId(p.getId());
+            map.put("status", isSold ? "Sold" : "Active");
+            map.put("sold", isSold);
+            return map;
+        });
+
+        return ResponseEntity.ok(dtoPage);
     }
 
     @PreAuthorize("hasAnyRole('FARMER','ADMIN')")
@@ -403,5 +428,14 @@ public class ProductController {
     @GetMapping("/products/market")
     public List<Map<String, Object>> getMarketProducts() {
         return productService.getMarketplaceProducts();
+    }
+
+    @GetMapping("/products/consumer")
+    public List<Map<String, Object>> getConsumerProducts() {
+        // Aggregate: Direct Farmer + Retailer
+        List<Map<String, Object>> market = productService.getMarketplaceProducts();
+        List<Map<String, Object>> retail = productService.getConsumerProducts();
+        market.addAll(retail);
+        return market;
     }
 }

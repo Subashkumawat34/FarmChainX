@@ -1,54 +1,50 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-
-interface Shipment {
-  id: string;
-  carrier: string;
-  eta: string;
-  status: string;
-  items: number;
-}
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe],
   selector: 'app-retailer-shipments',
   templateUrl: './retailer-shipments.component.html',
 })
-export class RetailerShipmentsComponent {
-  shipments: Shipment[] = [];
+export class RetailerShipmentsComponent implements OnInit {
+  shipments: any[] = [];
+  loading = true;
 
-  constructor(private http: HttpClient) {
+  constructor(private productService: ProductService) { }
+
+  ngOnInit() {
     this.fetchShipments();
   }
 
   fetchShipments() {
-    this.http.get<any[]>('/api/retailer/shipments').subscribe({
+    this.loading = true;
+    this.productService.getPendingShipments().subscribe({
       next: (data) => {
-        this.shipments = data;
+        // Backend returns Page object
+        this.shipments = data.content || [];
+        this.loading = false;
       },
-      error: (err) => console.error('Failed to load shipments', err)
+      error: (err) => {
+        console.error('Failed to load shipments', err);
+        this.loading = false;
+      }
     });
   }
 
-  statusClass(s: string) {
-    switch (s) {
-      case 'Delivered':
-        return 'bg-emerald-100 text-emerald-800';
-      case 'In Transit':
-        return 'bg-sky-100 text-sky-800';
-      case 'Picked':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  confirmReceipt(shipment: any) {
+    if (confirm('Confirm that you have physically received this shipment?')) {
+      const location = "Retailer Store (Received)";
+      this.productService.confirmReceipt(shipment.productId, location).subscribe({
+        next: () => {
+          alert('✅ Receipt Confirmed! Product is now in your Inventory.');
+          this.fetchShipments();
+        },
+        error: (err) => {
+          alert('Error confirming receipt: ' + err.error?.error || err.message);
+        }
+      });
     }
-  }
-
-  progress(s: string) {
-    if (s === 'Picked') return 15;
-    if (s === 'In Transit') return 60;
-    if (s === 'Delivered') return 100;
-    return 0;
   }
 }

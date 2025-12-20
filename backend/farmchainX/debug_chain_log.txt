@@ -1,0 +1,3 @@
+2025-12-20T21:51:38.450853: updateChain called with payload: {productId=14, location=Distributor Warehouse (Initial), notes=Distributor collected from farmer, toUserId=null}
+2025-12-20T22:23:31.509052200: updateChain called with payload: {productId=9, location=jaipur, toUserId=8}
+2025-12-20T22:24:58.514440800: updateChain called with payload: {productId=7, location=Jaipur, notes=Located}
