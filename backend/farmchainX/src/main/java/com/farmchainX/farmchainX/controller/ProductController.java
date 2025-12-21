@@ -25,15 +25,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.farmchainX.farmchainX.model.AIPrediction;
 import com.farmchainX.farmchainX.model.Product;
 import com.farmchainX.farmchainX.model.SupplyChainLog;
 import com.farmchainX.farmchainX.model.User;
+import com.farmchainX.farmchainX.repository.AIPredictionRepository;
 import com.farmchainX.farmchainX.repository.FeedbackRepository;
 import com.farmchainX.farmchainX.repository.ProductRepository;
 import com.farmchainX.farmchainX.repository.SupplyChainLogRepository;
 import com.farmchainX.farmchainX.repository.UserRepository;
 import com.farmchainX.farmchainX.service.ProductService;
 import com.farmchainX.farmchainX.util.HashUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api")
@@ -45,6 +48,8 @@ public class ProductController {
     private final SupplyChainLogRepository supplyChainLogRepository;
     private final FeedbackRepository feedbackRepository;
     private final com.farmchainX.farmchainX.service.GroqAIService groqAIService;
+    private final AIPredictionRepository aiPredictionRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ProductController(ProductService productService,
             UserRepository userRepository,
@@ -58,6 +63,7 @@ public class ProductController {
         this.supplyChainLogRepository = supplyChainLogRepository;
         this.feedbackRepository = feedbackRepository;
         this.groqAIService = groqAIService;
+        this.aiPredictionRepository = aiPredictionRepository;
     }
 
     @PostMapping("/products/upload")
@@ -126,6 +132,54 @@ public class ProductController {
             // Generate AI prediction using Groq
             Map<String, Object> aiPrediction = groqAIService.generateFarmPrediction(saved);
 
+            // Save AI prediction to database
+            try {
+                AIPrediction prediction = new AIPrediction();
+                prediction.setProduct(saved);
+                prediction.setFarmer(farmer);
+                
+                // Store full prediction as JSON
+                String predictionJson = objectMapper.writeValueAsString(aiPrediction);
+                prediction.setPredictionData(predictionJson);
+                
+                // Extract and store key fields for easier querying
+                if (aiPrediction.containsKey("qualityGrade")) {
+                    prediction.setQualityGrade(String.valueOf(aiPrediction.get("qualityGrade")));
+                }
+                if (aiPrediction.containsKey("qualityScore")) {
+                    Object score = aiPrediction.get("qualityScore");
+                    if (score instanceof Number) {
+                        prediction.setQualityScore(((Number) score).intValue());
+                    }
+                }
+                if (aiPrediction.containsKey("confidence")) {
+                    Object conf = aiPrediction.get("confidence");
+                    if (conf instanceof Number) {
+                        prediction.setConfidence(((Number) conf).intValue());
+                    }
+                }
+                if (aiPrediction.containsKey("marketReadiness")) {
+                    prediction.setMarketReadiness(String.valueOf(aiPrediction.get("marketReadiness")));
+                }
+                if (aiPrediction.containsKey("storageRecommendation")) {
+                    prediction.setStorageRecommendation(String.valueOf(aiPrediction.get("storageRecommendation")));
+                }
+                if (aiPrediction.containsKey("optimalSellingWindow")) {
+                    prediction.setOptimalSellingWindow(String.valueOf(aiPrediction.get("optimalSellingWindow")));
+                }
+                if (aiPrediction.containsKey("priceEstimate")) {
+                    prediction.setPriceEstimate(String.valueOf(aiPrediction.get("priceEstimate")));
+                }
+                if (aiPrediction.containsKey("certificationEligibility")) {
+                    prediction.setCertificationEligibility(String.valueOf(aiPrediction.get("certificationEligibility")));
+                }
+                
+                aiPredictionRepository.save(prediction);
+            } catch (Exception e) {
+                System.err.println("[AI Prediction Save Error] " + e.getMessage());
+                // Continue even if saving prediction fails
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("id", saved.getId());
@@ -193,6 +247,54 @@ public class ProductController {
         });
 
         return ResponseEntity.ok(dtoPage);
+    }
+
+    @PreAuthorize("hasRole('FARMER')")
+    @GetMapping("/predictions/my")
+    public ResponseEntity<?> getMyPredictions(Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Authentication required"));
+        }
+
+        String email = principal.getName();
+        User farmer = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Farmer not found"));
+
+        List<AIPrediction> predictions = aiPredictionRepository.findByFarmerIdOrderByCreatedAtDesc(farmer.getId());
+        
+        // Convert to response format with product details
+        List<Map<String, Object>> response = predictions.stream().map(prediction -> {
+            Map<String, Object> predMap = new HashMap<>();
+            predMap.put("id", prediction.getId());
+            predMap.put("productId", prediction.getProduct().getId());
+            predMap.put("productName", prediction.getProduct().getCropName());
+            predMap.put("qualityGrade", prediction.getQualityGrade());
+            predMap.put("qualityScore", prediction.getQualityScore());
+            predMap.put("confidence", prediction.getConfidence());
+            predMap.put("marketReadiness", prediction.getMarketReadiness());
+            predMap.put("storageRecommendation", prediction.getStorageRecommendation());
+            predMap.put("optimalSellingWindow", prediction.getOptimalSellingWindow());
+            predMap.put("priceEstimate", prediction.getPriceEstimate());
+            predMap.put("certificationEligibility", prediction.getCertificationEligibility());
+            predMap.put("createdAt", prediction.getCreatedAt());
+            
+            // Parse full prediction data if available
+            try {
+                if (prediction.getPredictionData() != null) {
+                    Map<String, Object> fullPrediction = objectMapper.readValue(
+                        prediction.getPredictionData(), 
+                        Map.class
+                    );
+                    predMap.put("fullPrediction", fullPrediction);
+                }
+            } catch (Exception e) {
+                // Ignore parsing errors
+            }
+            
+            return predMap;
+        }).collect(java.util.stream.Collectors.toList());
+
+        return ResponseEntity.ok(Map.of("predictions", response, "total", response.size()));
     }
 
     @PreAuthorize("hasAnyRole('FARMER','ADMIN')")

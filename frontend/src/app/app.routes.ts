@@ -46,6 +46,14 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     loadComponent: () => import('./pages/my-products/my-products').then((m) => m.MyProducts),
   },
+  {
+    path: 'farmer/dashboard',
+    canActivate: [AuthGuard],
+    loadComponent: () =>
+      import('./pages/farmer/farmer-dashboard/farmer-dashboard.component').then(
+        (m) => m.FarmerDashboardComponent
+      ),
+  },
 
   // FARMER ROUTES
   {

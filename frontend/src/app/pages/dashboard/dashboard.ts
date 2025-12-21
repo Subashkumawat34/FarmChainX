@@ -47,9 +47,9 @@ export class Dashboard implements AfterViewInit {
         subtitle: 'Manage retail operations',
       },
       FARMER: {
-        label: 'Farmer Panel',
+        label: 'Farmer Dashboard',
         route: '/farmer/dashboard',
-        subtitle: 'Manage your crops & listings',
+        subtitle: 'View AI predictions and insights',
       },
     };
 

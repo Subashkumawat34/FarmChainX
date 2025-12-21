@@ -36,3 +36,4 @@ groq.api.key=${GROQ_API_KEY:YOUR_GROQ_API_KEY_HERE}
 groq.api.url=https://api.groq.com/openai/v1/chat/completions
 groq.api.model=llama-3.3-70b-versatile
 
+
