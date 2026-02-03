@@ -9,8 +9,8 @@
 
 ## 🌟 Live Demo
 
-**Frontend**: [https://farmchainx.vercel.app](https://farmchainx.vercel.app)  
-**Backend API**: [https://farmchainx.onrender.com](https://farmchainx.onrender.com)
+**Frontend**: [https://farmchainx-frontend.vercel.app/](https://farmchainx-frontend.vercel.app/)  
+**Backend API**: [https://farmchainx-backend.onrender.com/](https://farmchainx-backend.onrender.com/)
 
 ---
 
